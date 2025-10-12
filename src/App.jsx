@@ -458,6 +458,18 @@ function App() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [authToken, setAuthToken] = useState(null);
 
+  // restore token from localStorage if present
+  useEffect(() => {
+    try {
+      const t = localStorage.getItem('admin_token');
+      if (t) {
+        setAuthToken(t);
+        setLoggedIn(true);
+        setView('admin');
+      }
+    } catch (e) {}
+  }, []);
+
   return (
     <Container fluid className="p-0">
       <Navbar bg="light" expand="lg" className="mb-4 rounded shadow-sm">
@@ -474,9 +486,9 @@ function App() {
       </Navbar>
       {view === 'admin' ? (
         loggedIn ? (
-          <AdminPortal authToken={authToken} onLogout={() => { setLoggedIn(false); setAuthToken(null); }} />
+          <AdminPortal authToken={authToken} onLogout={() => { try { localStorage.removeItem('admin_token'); } catch (e) {}; setLoggedIn(false); setAuthToken(null); }} />
         ) : (
-          <Login onLogin={(token) => { setLoggedIn(true); setAuthToken(token); }} />
+          <Login onLogin={(token) => { setLoggedIn(true); setAuthToken(token); setView('admin'); }} />
         )
       ) : (
         <Member />

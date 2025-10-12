@@ -23,6 +23,8 @@ function Login({ onLogin }) {
       });
       const data = await res.json();
       if (res.ok && data.token) {
+        // persist token so page reloads keep session
+        try { localStorage.setItem('admin_token', data.token); } catch (e) {}
         onLogin(data.token);
       } else {
         setError(data.error || 'Invalid credentials');
