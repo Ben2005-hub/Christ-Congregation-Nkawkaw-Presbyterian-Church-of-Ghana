@@ -459,6 +459,7 @@ function App() {
   const [view, setView] = useState('member');
   const [loggedIn, setLoggedIn] = useState(false);
   const [authToken, setAuthToken] = useState(null);
+  const [debugFetch, setDebugFetch] = useState('');
 
   // restore token from localStorage if present
   useEffect(() => {
@@ -492,6 +493,7 @@ function App() {
           <div>view: {view}</div>
           <div>loggedIn: {loggedIn ? 'true' : 'false'}</div>
           <div>token: {authToken ? (String(authToken).slice(0,8) + '...') : 'none'}</div>
+          <div style={{ marginTop: 6, color: '#444' }}>check: {debugFetch || 'idle'}</div>
         </div>
       </div>
 
@@ -499,7 +501,21 @@ function App() {
         loggedIn ? (
           <AdminPortal authToken={authToken} onLogout={() => { try { localStorage.removeItem('admin_token'); } catch (e) {}; setLoggedIn(false); setAuthToken(null); setView('member'); }} />
         ) : (
-          <Login onLogin={(token) => { try { localStorage.setItem('admin_token', token); } catch(e){}; setAuthToken(token); setLoggedIn(true); setView('admin'); }} />
+          <Login onLogin={(token) => { try { localStorage.setItem('admin_token', token); } catch(e){}; setAuthToken(token); setLoggedIn(true); setView('admin');
+              // immediately validate token by fetching members and show result in debug panel
+              (async () => {
+                try {
+                  const res = await fetch(`${API_BASE}/api/members`, { headers: { 'Authorization': `Bearer ${token}` } });
+                  if (!res.ok) {
+                    const err = await res.json().catch(() => null);
+                    setDebugFetch('fetch-error: ' + (err?.error || res.status));
+                  } else {
+                    const data = await res.json();
+                    setDebugFetch('fetch-ok: ' + (Array.isArray(data) ? data.length + ' members' : JSON.stringify(data)));
+                  }
+                } catch (e) { setDebugFetch('fetch-exception'); }
+              })();
+            }} />
         )
       ) : (
         <Member />
