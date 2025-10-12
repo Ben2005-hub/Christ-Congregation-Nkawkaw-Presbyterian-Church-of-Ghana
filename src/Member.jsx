@@ -8,6 +8,9 @@ export default function Member() {
   const [member, setMember] = useState({ name: '', phone: '', type: 'new', dob: '' });
   const [msg, setMsg] = useState('');
   const [registered, setRegistered] = useState(false);
+  const [memberId, setMemberId] = useState(null);
+  const [payment, setPayment] = useState({ amount: '', type: 'tithe' });
+  const [paymentMsg, setPaymentMsg] = useState('');
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -22,6 +25,7 @@ export default function Member() {
       if (res.ok) {
         setMsg('Registration successful!');
         setRegistered(true);
+        setMemberId(data.id || null);
         setMember({ name: '', phone: '', type: 'new', dob: '' });
       } else {
         setMsg(data.error || 'Registration failed');
@@ -91,6 +95,41 @@ export default function Member() {
             </Form>
           )}
           {msg && !registered && <p className="mt-2 text-danger">{msg}</p>}
+          <hr />
+          <Card.Title>Make a Payment</Card.Title>
+          <Form onSubmit={async (e) => {
+            e.preventDefault();
+            setPaymentMsg('');
+            try {
+              // Use stored memberId if we just registered, else try public lookup
+              let idToUse = memberId;
+              if (!idToUse) {
+                const resMembers = await fetch('http://localhost:5001/api/members/public');
+                const all = await resMembers.json().catch(() => []);
+                const me = all.find(m => m.phone === member.phone);
+                if (!me) { setPaymentMsg('Register first or use the registered phone number'); return; }
+                idToUse = me.id;
+              }
+              const res = await fetch('http://localhost:5001/api/payments', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ memberId: idToUse, amount: payment.amount, type: payment.type })
+              });
+              const d = await res.json();
+              if (res.ok) { setPaymentMsg('Payment recorded. Thank you!'); setPayment({ amount: '', type: 'tithe' }); } else { setPaymentMsg(d.error || 'Payment failed'); }
+            } catch (err) { setPaymentMsg('Server error'); }
+          }}>
+            <Form.Group className="mb-2">
+              <Form.Control type="number" placeholder="Amount (GHS)" value={payment.amount} onChange={e => setPayment({ ...payment, amount: e.target.value })} required />
+            </Form.Group>
+            <Form.Group className="mb-2">
+              <Form.Select value={payment.type} onChange={e => setPayment({ ...payment, type: e.target.value })}>
+                <option value="tithe">Tithe</option>
+                <option value="funeral">Funeral Due</option>
+              </Form.Select>
+            </Form.Group>
+            <Button type="submit" className="w-100">Pay</Button>
+            {paymentMsg && <p className="mt-2 text-primary">{paymentMsg}</p>}
+          </Form>
         </Card.Body>
       </Card>
     </Container>

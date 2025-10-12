@@ -84,6 +84,12 @@ app.get('/api/members', requireAuth, (req, res) => {
   res.json(getAllMembers());
 });
 
+// Public members list (limited fields) for member-facing lookups
+app.get('/api/members/public', (req, res) => {
+  const list = getAllMembers().map(m => ({ id: m.id, name: m.name, phone: m.phone, dob: m.dob, type: m.type }));
+  res.json(list);
+});
+
 
 // Payment logic
 const { recordPayment, getAllPayments } = require('./payments');
@@ -91,8 +97,8 @@ const { recordPayment, getAllPayments } = require('./payments');
 
 // Record a payment (tithe or funeral due)
 
-// Record a payment (tithe or funeral due) (SMS sending temporarily disabled)
-app.post('/api/payments', requireAuth, async (req, res) => {
+// Record a payment (tithe or funeral due) - allow members (public POST)
+app.post('/api/payments', async (req, res) => {
   const data = req.body;
   if (!data.memberId || !data.amount || !data.type) {
     return res.status(400).json({ error: 'memberId, amount, and type are required' });

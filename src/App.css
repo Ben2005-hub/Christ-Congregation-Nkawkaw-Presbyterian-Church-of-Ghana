@@ -127,3 +127,22 @@ p {
     padding: 12px 4vw;
   }
 }
+
+/* Better responsiveness for small devices */
+@media (max-width: 576px) {
+  .logo { width: 48px; height: 48px; }
+  .styled-logo { padding: 6px; }
+  .card, .Card, .container, .app-shell { padding-left: 8px; padding-right: 8px; }
+  form { gap: 10px; padding: 12px; }
+  .navbar .container { padding-left: 6px; padding-right: 6px; }
+  .mx-auto { margin-left: 8px !important; margin-right: 8px !important; }
+  .w-100 { width: 100%; }
+  .mb-2 { margin-bottom: 8px !important; }
+}
+
+@media (max-width: 480px) {
+  .card { width: 100% !important; margin: 6px !important; }
+  .row, .d-flex { flex-direction: column !important; }
+  .navbar-brand { font-size: 0.95rem; }
+  .form-control, .form-select { font-size: 0.95rem; padding: 10px; }
+}
