@@ -23,11 +23,10 @@ function Login({ onLogin }) {
       });
       const data = await res.json();
       if (res.ok && data.token) {
-        // persist token so page reloads keep session
-        try { localStorage.setItem('admin_token', data.token); } catch (e) {}
+        // call parent first so App state updates immediately, then persist token
         onLogin(data.token);
-        // reload page to ensure app restores token and shows AdminPortal (helps on some browsers/devices)
-        try { window.location.reload(); } catch (e) {}
+        try { localStorage.setItem('admin_token', data.token); } catch (e) {}
+        setSuccess('Login successful');
       } else {
         setError(data.error || 'Invalid credentials');
       }

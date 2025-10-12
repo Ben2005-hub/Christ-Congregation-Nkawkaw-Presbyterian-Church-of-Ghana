@@ -105,19 +105,21 @@ function AdminPortal({ onLogout, authToken }) {
   };
 
   useEffect(() => {
+    // only fetch protected data once a token is available
+    if (!authToken) return;
     fetchMembers();
     fetchPayments();
     // load birthday template
     (async () => {
       try {
-  const res = await fetch(`${API_BASE}/api/sms/birthday-template`, { headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {} });
+        const res = await fetch(`${API_BASE}/api/sms/birthday-template`, { headers: { 'Authorization': `Bearer ${authToken}` } });
         if (res.ok) {
           const data = await res.json();
           setBirthdayTemplate(data.template || '');
         }
       } catch (e) { }
     })();
-  }, []);
+  }, [authToken]);
 
   // Admin live search (debounced)
   useEffect(() => {
@@ -486,9 +488,9 @@ function App() {
       </Navbar>
       {view === 'admin' ? (
         loggedIn ? (
-          <AdminPortal authToken={authToken} onLogout={() => { try { localStorage.removeItem('admin_token'); } catch (e) {}; setLoggedIn(false); setAuthToken(null); }} />
+          <AdminPortal authToken={authToken} onLogout={() => { try { localStorage.removeItem('admin_token'); } catch (e) {}; setLoggedIn(false); setAuthToken(null); setView('member'); }} />
         ) : (
-          <Login onLogin={(token) => { setLoggedIn(true); setAuthToken(token); setView('admin'); }} />
+          <Login onLogin={(token) => { try { localStorage.setItem('admin_token', token); } catch(e){}; setAuthToken(token); setLoggedIn(true); setView('admin'); }} />
         )
       ) : (
         <Member />
