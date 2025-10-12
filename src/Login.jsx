@@ -24,6 +24,7 @@ function Login({ onLogin }) {
       const data = await res.json();
       if (res.ok && data.token) {
         // call parent first so App state updates immediately, then persist token
+        try { console.log('Login successful, invoking onLogin with token', String(data.token).slice(0,8) + '...'); } catch(e){}
         onLogin(data.token);
         try { localStorage.setItem('admin_token', data.token); } catch (e) {}
         setSuccess('Login successful');
