@@ -460,6 +460,7 @@ function App() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [authToken, setAuthToken] = useState(null);
   const [debugFetch, setDebugFetch] = useState('');
+  const [serverStatus, setServerStatus] = useState('unknown');
 
   // restore token from localStorage if present
   useEffect(() => {
@@ -471,6 +472,13 @@ function App() {
         setView('admin');
       }
     } catch (e) {}
+    // quick server ping on load
+    (async () => {
+      try {
+        const r = await fetch(`${API_BASE}/`);
+        if (r.ok) setServerStatus('ok'); else setServerStatus('error');
+      } catch (e) { setServerStatus('error'); }
+    })();
   }, []);
 
   return (
@@ -494,6 +502,7 @@ function App() {
           <div>loggedIn: {loggedIn ? 'true' : 'false'}</div>
           <div>token: {authToken ? (String(authToken).slice(0,8) + '...') : 'none'}</div>
           <div style={{ marginTop: 6, color: '#444' }}>check: {debugFetch || 'idle'}</div>
+          <div style={{ marginTop: 4, color: serverStatus === 'ok' ? 'green' : '#a00' }}>server: {serverStatus}</div>
         </div>
       </div>
 
@@ -501,7 +510,7 @@ function App() {
         loggedIn ? (
           <AdminPortal authToken={authToken} onLogout={() => { try { localStorage.removeItem('admin_token'); } catch (e) {}; setLoggedIn(false); setAuthToken(null); setView('member'); }} />
         ) : (
-          <Login onLogin={(token) => { try { localStorage.setItem('admin_token', token); } catch(e){}; setAuthToken(token); setLoggedIn(true); setView('admin');
+          <Login serverStatus={serverStatus} onLogin={(token) => { try { localStorage.setItem('admin_token', token); } catch(e){}; setAuthToken(token); setLoggedIn(true); setView('admin');
               // immediately validate token by fetching members and show result in debug panel
               (async () => {
                 try {

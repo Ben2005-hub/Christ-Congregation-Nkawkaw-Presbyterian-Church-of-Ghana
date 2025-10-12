@@ -4,7 +4,7 @@ const API_BASE = (function(){ try { const loc = window.location; return `${loc.p
 import './App.css';
 
 
-function Login({ onLogin }) {
+function Login({ onLogin, serverStatus }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -61,6 +61,9 @@ function Login({ onLogin }) {
   return (
     <div className="container">
       <h2>{signup ? 'Admin Signup' : 'Admin Login'}</h2>
+      {serverStatus !== 'ok' && (
+        <p style={{ color: 'darkred' }}>Server appears unreachable ({serverStatus}). Please start the backend and try again.</p>
+      )}
       <form onSubmit={signup ? handleSignup : handleLogin}>
         <input
           type="text"
