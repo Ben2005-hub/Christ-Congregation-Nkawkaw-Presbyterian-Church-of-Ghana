@@ -21,8 +21,8 @@ body {
 .logo {
   display: block;
   margin: 0;
-  width: 64px;
-  height: 64px;
+  max-width: 64px;
+  height: auto;
   object-fit: contain;
 }
 
@@ -33,6 +33,38 @@ body {
   background: #fff;
   padding: 8px;
 }
+
+/* make navbar brand wrap and avoid overflow on small screens */
+.navbar-brand {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+/* Make form controls and images adapt to container width */
+input, select, textarea, .form-control, .form-select {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+img.logo { max-width: 100%; height: auto; }
+
+/* Ensure cards and containers never force horizontal scrolling */
+.card, .Card, .container, .app-shell {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* small helper class for member card to stay centered and fluid */
+.member-card {
+  max-width: 420px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* prevent long text from causing overflow */
+.list-group-item, .card-body { word-break: break-word; }
 
 h1 {
   text-align: center;
@@ -145,4 +177,11 @@ p {
   .row, .d-flex { flex-direction: column !important; }
   .navbar-brand { font-size: 0.95rem; }
   .form-control, .form-select { font-size: 0.95rem; padding: 10px; }
+}
+
+/* Extra small screens tweaks */
+@media (max-width: 360px) {
+  .logo { max-width: 44px; }
+  .styled-logo { padding: 4px; border-width: 2px; }
+  .navbar-brand span { font-size: 0.95rem; }
 }

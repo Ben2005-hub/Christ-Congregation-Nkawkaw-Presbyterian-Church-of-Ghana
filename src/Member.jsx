@@ -45,7 +45,7 @@ export default function Member() {
           </Navbar.Brand>
         </Container>
       </Navbar>
-      <Card className="mx-auto shadow-sm" style={{maxWidth: 400}}>
+      <Card className="member-card mx-auto shadow-sm">
         <Card.Body>
           <Card.Title>Member Registration</Card.Title>
           {registered ? (
