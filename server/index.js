@@ -69,9 +69,9 @@ app.post('/api/members', async (req, res) => {
   }
   const member = registerMember(data);
   try {
-    await sendSMS(
-      data.phone,
-      `Welcome to the Presbyterian Church of Ghana, ${data.name}! Your registration is successful.`
+      await sendSMS(
+        data.phone,
+        `Welcome to Christ Congregation Nkakaw — Presbyterian Church of Ghana, ${data.name}! Your registration is successful.`
     );
   } catch (err) {
     console.error('SMS error:', err.message);
@@ -101,9 +101,9 @@ app.post('/api/payments', requireAuth, async (req, res) => {
   const member = getAllMembers().find(m => m.id === data.memberId);
   if (member) {
     try {
-      await sendSMS(
-        member.phone,
-        `Dear ${member.name}, your ${data.type} payment of GHS${data.amount} has been received. Thank you!`
+        await sendSMS(
+          member.phone,
+          `Dear ${member.name}, your ${data.type} payment of GHS${data.amount} has been received. Thank you! — Christ Congregation Nkakaw`
       );
     } catch (err) {
       console.error('SMS error:', err.message);

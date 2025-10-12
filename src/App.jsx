@@ -115,11 +115,17 @@ function AdminPortal({ onLogout, authToken }) {
     <Container className="py-4">
       <Navbar bg="light" expand="lg" className="mb-4 rounded shadow-sm">
         <Container>
-          <Navbar.Brand href="#">
-            <img src={pcgLogo} alt="Presbyterian Church of Ghana Logo" className="logo styled-logo me-2" style={{width:50, height:50}} />
-            <span className="fw-bold">Presbyterian Church of Ghana</span>
+          <Navbar.Brand href="#" className="d-flex align-items-center">
+            <img src={pcgLogo} alt="Christ Congregation Nkakaw" className="logo styled-logo me-2" style={{maxWidth:50, height:'auto'}} />
+            <div className="d-flex flex-column">
+              <span className="fw-bold">Christ Congregation Nkakaw</span>
+              <small className="text-muted">Presbyterian Church of Ghana</small>
+            </div>
           </Navbar.Brand>
-          <Button variant="outline-danger" onClick={onLogout}>Logout</Button>
+          <Navbar.Toggle aria-controls="main-navbar" />
+          <Navbar.Collapse id="main-navbar" className="justify-content-end">
+            <Button variant="outline-danger" onClick={onLogout}>Logout</Button>
+          </Navbar.Collapse>
         </Container>
       </Navbar>
       <Row className="mb-4">
