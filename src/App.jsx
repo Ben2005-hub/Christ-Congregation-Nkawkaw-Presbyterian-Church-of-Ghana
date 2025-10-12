@@ -1,0 +1,418 @@
+
+
+
+
+import { useState, useEffect } from 'react';
+import './App.css';
+import Login from './Login';
+import Member from './Member';
+import { Container, Row, Col, Card, Button, Form, ListGroup, Badge, Navbar, Nav, Modal } from 'react-bootstrap';
+
+const pcgLogo = 'https://www.nicepng.com/png/detail/219-2193162_presbyterian-church-of-ghana-logo-presbyterian-church-ghana.png';
+
+
+
+function AdminPortal({ onLogout, authToken }) {
+  // token is available via closure from App component state (see below)
+  const [member, setMember] = useState({ name: '', phone: '', type: 'new', dob: '' });
+  const [registerMsg, setRegisterMsg] = useState('');
+  const [selectedMembers, setSelectedMembers] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+  const [bulkMessage, setBulkMessage] = useState('');
+  const [sendResults, setSendResults] = useState([]);
+  const [payment, setPayment] = useState({ memberId: '', amount: '', type: 'tithe' });
+  const [paymentMsg, setPaymentMsg] = useState('');
+  const [members, setMembers] = useState([]);
+  const [payments, setPayments] = useState([]);
+  const [showMemberModal, setShowMemberModal] = useState(false);
+  const [activeMember, setActiveMember] = useState(null);
+  const [birthdayTemplate, setBirthdayTemplate] = useState('');
+  const [templateMsg, setTemplateMsg] = useState('');
+
+  // Register member handler
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setRegisterMsg('');
+    try {
+      const res = await fetch('http://localhost:5001/api/members', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(member)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setRegisterMsg('Registration successful!');
+        setMember({ name: '', phone: '', type: 'new', dob: '' });
+        fetchMembers();
+      } else {
+        setRegisterMsg(data.error || 'Registration failed');
+      }
+    } catch {
+      setRegisterMsg('Server error');
+    }
+  };
+
+  // Fetch members
+  const fetchMembers = async () => {
+  const res = await fetch('http://localhost:5001/api/members', { headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {} });
+    const data = await res.json();
+    setMembers(data);
+  };
+
+  // Fetch payments
+  const fetchPayments = async () => {
+  const res = await fetch('http://localhost:5001/api/payments', { headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {} });
+    const data = await res.json();
+    setPayments(data);
+  };
+
+  // Payment handler
+  const handlePayment = async (e) => {
+    e.preventDefault();
+    setPaymentMsg('');
+    try {
+      const res = await fetch('http://localhost:5001/api/payments', {
+        method: 'POST',
+        headers: Object.assign({ 'Content-Type': 'application/json' }, authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+        body: JSON.stringify({
+          ...payment,
+          memberId: Number(payment.memberId)
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setPaymentMsg('Payment successful!');
+        setPayment({ memberId: '', amount: '', type: 'tithe' });
+        fetchPayments();
+      } else {
+        setPaymentMsg(data.error || 'Payment failed');
+      }
+    } catch {
+      setPaymentMsg('Server error');
+    }
+  };
+
+  useEffect(() => {
+    fetchMembers();
+    fetchPayments();
+    // load birthday template
+    (async () => {
+      try {
+        const res = await fetch('http://localhost:5001/api/sms/birthday-template', { headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {} });
+        if (res.ok) {
+          const data = await res.json();
+          setBirthdayTemplate(data.template || '');
+        }
+      } catch (e) { }
+    })();
+  }, []);
+
+  // Dashboard summary
+  const totalTithes = payments.filter(p => p.type === 'tithe').reduce((sum, p) => sum + Number(p.amount), 0);
+  const totalFuneral = payments.filter(p => p.type === 'funeral').reduce((sum, p) => sum + Number(p.amount), 0);
+
+  return (
+    <Container className="py-4">
+      <Navbar bg="light" expand="lg" className="mb-4 rounded shadow-sm">
+        <Container>
+          <Navbar.Brand href="#">
+            <img src={pcgLogo} alt="Presbyterian Church of Ghana Logo" className="logo styled-logo me-2" style={{width:50, height:50}} />
+            <span className="fw-bold">Presbyterian Church of Ghana</span>
+          </Navbar.Brand>
+          <Button variant="outline-danger" onClick={onLogout}>Logout</Button>
+        </Container>
+      </Navbar>
+      <Row className="mb-4">
+        <Col md={4}>
+          <Card className="mb-3 shadow-sm">
+            <Card.Body>
+              <Card.Title>Dashboard</Card.Title>
+              <Card.Text>Total Members: <Badge bg="success">{members.length}</Badge></Card.Text>
+              <Card.Text>Total Tithes: <Badge bg="primary">GHS {totalTithes}</Badge></Card.Text>
+              <Card.Text>Total Funeral Dues: <Badge bg="secondary">GHS {totalFuneral}</Badge></Card.Text>
+            </Card.Body>
+          </Card>
+          <Card className="shadow-sm">
+            <Card.Body>
+              <Card.Title>Register Member</Card.Title>
+              <Form onSubmit={handleRegister}>
+                <Form.Group className="mb-2">
+                  <Form.Control
+                    type="text"
+                    placeholder="Full Name"
+                    value={member.name}
+                    onChange={e => setMember({ ...member, name: e.target.value })}
+                    required
+                  />
+                </Form.Group>
+                <Form.Group className="mb-2">
+                  <Form.Control
+                    type="tel"
+                    placeholder="Phone Number"
+                    value={member.phone}
+                    onChange={e => setMember({ ...member, phone: e.target.value })}
+                    required
+                  />
+                </Form.Group>
+                <Form.Group className="mb-2">
+                  <Form.Control
+                    type="date"
+                    placeholder="Date of Birth"
+                    value={member.dob}
+                    onChange={e => setMember({ ...member, dob: e.target.value })}
+                  />
+                </Form.Group>
+                <Form.Group className="mb-2">
+                  <Form.Select
+                    value={member.type}
+                    onChange={e => setMember({ ...member, type: e.target.value })}
+                    required
+                  >
+                    <option value="new">New Member</option>
+                    <option value="old">Old Member</option>
+                  </Form.Select>
+                </Form.Group>
+                <Button type="submit" variant="success" className="w-100">Register</Button>
+              </Form>
+              {registerMsg && <p className="mt-2 text-success">{registerMsg}</p>}
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={8}>
+          <Card className="mb-3 shadow-sm">
+            <Card.Body>
+              <Card.Title>Make Payment</Card.Title>
+              <Form onSubmit={handlePayment}>
+                <Row>
+                  <Col md={5} className="mb-2">
+                    <Form.Select
+                      value={payment.memberId}
+                      onChange={e => setPayment({ ...payment, memberId: e.target.value })}
+                      required
+                    >
+                      <option value="">Select Member</option>
+                      {members.map(m => (
+                        <option key={m.id} value={m.id}>
+                          {m.name} ({m.phone}) - {m.type === 'old' ? 'Old Member' : 'New Member'}
+                        </option>
+                      ))}
+                    </Form.Select>
+                  </Col>
+                  <Col md={3} className="mb-2">
+                    <Form.Control
+                      type="number"
+                      placeholder="Amount (GHS)"
+                      value={payment.amount}
+                      onChange={e => setPayment({ ...payment, amount: e.target.value })}
+                      required
+                    />
+                  </Col>
+                  <Col md={4} className="mb-2">
+                    <Form.Select
+                      value={payment.type}
+                      onChange={e => setPayment({ ...payment, type: e.target.value })}
+                    >
+                      <option value="tithe">Tithe</option>
+                      <option value="funeral">Funeral Due</option>
+                    </Form.Select>
+                  </Col>
+                </Row>
+                <Button type="submit" variant="primary" className="w-100 mt-2">Pay</Button>
+              </Form>
+              {paymentMsg && <p className="mt-2 text-primary">{paymentMsg}</p>}
+            </Card.Body>
+          </Card>
+          <Row>
+            <Col md={6}>
+              <Card className="shadow-sm mb-3">
+                <Card.Body>
+                  <Card.Title>All Members</Card.Title>
+                  <div style={{ marginBottom: 10 }}>
+                    <Form.Control
+                      as="textarea"
+                      rows={3}
+                      placeholder="Bulk message (use {name} to inject member name)"
+                      value={bulkMessage}
+                      onChange={e => setBulkMessage(e.target.value)}
+                    />
+                    <div className="d-flex gap-2 mt-2">
+                      <Button onClick={async () => {
+                        if (selectedMembers.length === 0) return alert('Select members first');
+                        try {
+                          // build per-recipient payloads with {name} replacement
+                          const targets = members.filter(m => selectedMembers.includes(m.id));
+                          const payloads = targets.map(t => ({ to: t.phone, message: bulkMessage.replace(/\{name\}/g, t.name) }));
+                          const res = await fetch('http://localhost:5001/api/sms/bulk', {
+                            method: 'POST',
+                            headers: Object.assign({ 'Content-Type': 'application/json' }, authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+                            body: JSON.stringify({ payloads })
+                          });
+                          const data = await res.json();
+                          if (res.ok) {
+                            setSendResults(data.results || []);
+                            alert('Messages queued');
+                          } else {
+                            alert(data.error || 'Failed');
+                          }
+                        } catch (err) { alert('Server error'); }
+                      }}>Send Bulk</Button>
+                      <Button variant="outline-primary" onClick={async () => {
+                        // trigger birthday endpoint
+                        try {
+                          const res = await fetch('http://localhost:5001/api/sms/birthday', { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, authToken ? { 'Authorization': `Bearer ${authToken}` } : {}), body: JSON.stringify({ template: null }) });
+                          const data = await res.json();
+                          if (res.ok) alert('Birthday send complete: ' + (data.count || 0)); else alert(data.error || 'Failed');
+                        } catch (err) { alert('Server error'); }
+                      }}>Send Birthday Messages</Button>
+                    </div>
+                    <div className="mt-3">
+                      <Form.Label><strong>Birthday Template</strong> (use {name})</Form.Label>
+                      <Form.Control as="textarea" rows={3} value={birthdayTemplate} onChange={e => setBirthdayTemplate(e.target.value)} />
+                      <div className="d-flex gap-2 mt-2">
+                        <Button onClick={async () => {
+                          try {
+                            const res = await fetch('http://localhost:5001/api/sms/birthday-template', { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, authToken ? { 'Authorization': `Bearer ${authToken}` } : {}), body: JSON.stringify({ template: birthdayTemplate }) });
+                            const data = await res.json();
+                            if (res.ok) setTemplateMsg('Template saved'); else setTemplateMsg(data.error || 'Save failed');
+                          } catch (e) { setTemplateMsg('Server error'); }
+                        }}>Save Template</Button>
+                        <Button variant="secondary" onClick={async () => {
+                          // send to selected members using template
+                          if (selectedMembers.length === 0) return alert('Select members first');
+                          try {
+                            const targets = members.filter(m => selectedMembers.includes(m.id));
+                            const payloads = targets.map(t => ({ to: t.phone, message: (birthdayTemplate || '').replace(/\{name\}/g, t.name) }));
+                            const res = await fetch('http://localhost:5001/api/sms/bulk', {
+                              method: 'POST',
+                              headers: Object.assign({ 'Content-Type': 'application/json' }, authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+                              body: JSON.stringify({ payloads })
+                            });
+                            const data = await res.json();
+                            if (res.ok) { setSendResults(data.results || []); alert('Birthday messages queued'); } else alert(data.error || 'Failed');
+                          } catch (e) { alert('Server error'); }
+                        }}>Send Birthday to Selected</Button>
+                        {templateMsg && <span className="ms-2">{templateMsg}</span>}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mb-2 d-flex align-items-center">
+                    <Form.Check className="me-2" label="Select all" checked={selectAll} onChange={e => {
+                      const checked = e.target.checked;
+                      setSelectAll(checked);
+                      if (checked) setSelectedMembers(members.map(m => m.id)); else setSelectedMembers([]);
+                    }} />
+                  </div>
+                  <ListGroup>
+                    {members.map(m => (
+                      <ListGroup.Item key={m.id} className="d-flex align-items-center justify-content-between">
+                        <div className="d-flex align-items-center">
+                          <Form.Check className="me-3" checked={selectedMembers.includes(m.id)} onChange={e => {
+                            if (e.target.checked) setSelectedMembers(prev => [...prev, m.id]); else setSelectedMembers(prev => prev.filter(id => id !== m.id));
+                            // unset selectAll if any deselected
+                            if (!e.target.checked) setSelectAll(false);
+                          }} />
+                          <div>
+                            <div>{m.name} ({m.phone}) - <Badge bg={m.type === 'old' ? 'secondary' : 'success'}>{m.type === 'old' ? 'Old Member' : 'New Member'}</Badge></div>
+                            {m.dob && <small className="text-muted">DOB: {m.dob}</small>}
+                          </div>
+                        </div>
+                        <div>
+                          <Button size="sm" variant="link" onClick={() => { setActiveMember(m); setShowMemberModal(true); }}>View</Button>
+                        </div>
+                      </ListGroup.Item>
+                    ))}
+                  </ListGroup>
+                  <Modal show={showMemberModal} onHide={() => setShowMemberModal(false)}>
+                    <Modal.Header closeButton>
+                      <Modal.Title>Member Details</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                      {activeMember ? (
+                        <div>
+                          <p><strong>Name:</strong> {activeMember.name}</p>
+                          <p><strong>Phone:</strong> {activeMember.phone}</p>
+                          <p><strong>Type:</strong> {activeMember.type}</p>
+                          <p><strong>DOB:</strong> {activeMember.dob || 'N/A'}</p>
+                          <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(activeMember, null, 2)}</pre>
+                        </div>
+                      ) : <div>No member</div>}
+                    </Modal.Body>
+                    <Modal.Footer>
+                      <Button variant="secondary" onClick={() => setShowMemberModal(false)}>Close</Button>
+                    </Modal.Footer>
+                  </Modal>
+                  {sendResults.length > 0 && (
+                    <Card className="mt-3">
+                      <Card.Body>
+                        <Card.Title>Send Results</Card.Title>
+                        <ListGroup>
+                          {sendResults.map((r, idx) => (
+                            <ListGroup.Item key={idx}>
+                              {r.to} - {r.sid ? `SID: ${r.sid}` : `Error: ${r.error}`}
+                            </ListGroup.Item>
+                          ))}
+                        </ListGroup>
+                      </Card.Body>
+                    </Card>
+                  )}
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col md={6}>
+              <Card className="shadow-sm mb-3">
+                <Card.Body>
+                  <Card.Title>All Payments</Card.Title>
+                  <ListGroup>
+                    {payments.map(p => {
+                      const mem = members.find(m => m.id === p.memberId);
+                      return (
+                        <ListGroup.Item key={p.id}>
+                          {mem ? mem.name : 'Unknown'} - {p.type} - GHS {p.amount} <span className="text-muted">({p.date && p.date.slice(0,10)})</span>
+                        </ListGroup.Item>
+                      );
+                    })}
+                  </ListGroup>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+        </Col>
+      </Row>
+    </Container>
+  );
+}
+
+
+function App() {
+  const [view, setView] = useState('member');
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [authToken, setAuthToken] = useState(null);
+
+  return (
+    <Container fluid className="p-0">
+      <Navbar bg="light" expand="lg" className="mb-4 rounded shadow-sm">
+        <Container>
+          <Navbar.Brand href="#">
+            <img src={pcgLogo} alt="Presbyterian Church of Ghana Logo" className="logo styled-logo me-2" style={{width:50, height:50}} />
+            <span className="fw-bold">Presbyterian Church of Ghana</span>
+          </Navbar.Brand>
+          <Nav className="ms-auto">
+            <Nav.Link onClick={() => setView('member')}>Member</Nav.Link>
+            <Nav.Link onClick={() => setView('admin')}>Admin</Nav.Link>
+          </Nav>
+        </Container>
+      </Navbar>
+      {view === 'admin' ? (
+        loggedIn ? (
+          <AdminPortal authToken={authToken} onLogout={() => { setLoggedIn(false); setAuthToken(null); }} />
+        ) : (
+          <Login onLogin={(token) => { setLoggedIn(true); setAuthToken(token); }} />
+        )
+      ) : (
+        <Member />
+      )}
+    </Container>
+  );
+}
+
+export default App;

@@ -1,0 +1,141 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+
+
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #fff;
+  margin: 0;
+  padding: 0;
+}
+
+
+.container {
+  max-width: 600px;
+  margin: 40px auto;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(26,60,26,0.10);
+  padding: 36px 28px 28px 28px;
+}
+
+.logo {
+  display: block;
+  margin: 0 auto 16px auto;
+  width: 90px;
+  height: 90px;
+  object-fit: contain;
+}
+
+.styled-logo {
+  border-radius: 50%;
+  border: 3px solid #1a3c1a;
+  box-shadow: 0 4px 18px rgba(26,60,26,0.13);
+  background: #fff;
+  padding: 8px;
+}
+
+h1 {
+  text-align: center;
+  color: #1a3c1a;
+  margin-bottom: 8px;
+}
+
+
+.form-section {
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f8faf8;
+  border-radius: 10px;
+  box-shadow: 0 1px 6px rgba(26,60,26,0.04);
+  padding-top: 18px;
+  margin-top: 18px;
+}
+
+.form-section:last-child {
+  border-bottom: none;
+}
+
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #fff;
+  border-radius: 8px;
+  padding: 18px 14px 14px 14px;
+  box-shadow: 0 1px 4px rgba(26,60,26,0.06);
+}
+
+
+input, select {
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #bdbdbd;
+  font-size: 1rem;
+  background: #f6f6f6;
+  transition: border 0.2s;
+}
+
+input:focus, select:focus {
+  border: 1.5px solid #1a3c1a;
+  outline: none;
+  background: #fff;
+}
+
+button {
+  padding: 12px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #1a3c1a 60%, #2e5c2e 100%);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1.08rem;
+  box-shadow: 0 1px 4px rgba(26,60,26,0.08);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+button {
+  background: #1a3c1a;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+
+button:hover {
+  background: #2e5c2e;
+  box-shadow: 0 2px 8px rgba(26,60,26,0.12);
+}
+
+ul {
+  padding-left: 18px;
+}
+
+
+p {
+  margin: 0;
+  color: #1a3c1a;
+  font-size: 1.01rem;
+}
+
+@media (max-width: 700px) {
+  .container {
+    max-width: 98vw;
+    padding: 12px 4vw;
+  }
+  .logo {
+    width: 60px;
+    height: 60px;
+  }
+}
