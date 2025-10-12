@@ -1,4 +1,6 @@
 import { useState } from 'react';
+
+const API_BASE = (function(){ try { const loc = window.location; return `${loc.protocol}//${loc.hostname}:5001`; } catch(e){ return 'http://localhost:5001'; } })();
 import './App.css';
 
 
@@ -14,7 +16,7 @@ function Login({ onLogin }) {
     setError('');
     setSuccess('');
     try {
-      const res = await fetch('http://localhost:5001/api/admin/login', {
+  const res = await fetch(`${API_BASE}/api/admin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
@@ -35,7 +37,7 @@ function Login({ onLogin }) {
     setError('');
     setSuccess('');
     try {
-      const res = await fetch('http://localhost:5001/api/admin/signup', {
+  const res = await fetch(`${API_BASE}/api/admin/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })

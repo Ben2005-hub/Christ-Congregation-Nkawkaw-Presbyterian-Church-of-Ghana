@@ -4,6 +4,8 @@ import { Container, Card, Button, Form, Navbar } from 'react-bootstrap';
 
 const pcgLogo = 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Presbyterian_Church_of_Ghana_Crest.png/330px-Presbyterian_Church_of_Ghana_Crest.png';
 
+const API_BASE = (function(){ try { const loc = window.location; return `${loc.protocol}//${loc.hostname}:5001`; } catch(e){ return 'http://localhost:5001'; } })();
+
 export default function Member() {
   const [member, setMember] = useState({ name: '', phone: '', type: 'new', dob: '' });
   const [msg, setMsg] = useState('');
@@ -16,7 +18,7 @@ export default function Member() {
     e.preventDefault();
     setMsg('');
     try {
-      const res = await fetch('http://localhost:5001/api/members', {
+  const res = await fetch(`${API_BASE}/api/members`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(member)
@@ -104,13 +106,13 @@ export default function Member() {
               // Use stored memberId if we just registered, else try public lookup
               let idToUse = memberId;
               if (!idToUse) {
-                const resMembers = await fetch('http://localhost:5001/api/members/public');
+                  const resMembers = await fetch(`${API_BASE}/api/members/public`);
                 const all = await resMembers.json().catch(() => []);
                 const me = all.find(m => m.phone === member.phone);
                 if (!me) { setPaymentMsg('Register first or use the registered phone number'); return; }
                 idToUse = me.id;
               }
-              const res = await fetch('http://localhost:5001/api/payments', {
+              const res = await fetch(`${API_BASE}/api/payments`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ memberId: idToUse, amount: payment.amount, type: payment.type })
               });

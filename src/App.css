@@ -1,3 +1,8 @@
+html, body, #root {
+  background: #f6f8f6; /* light neutral page background to avoid dark margins */
+  height: 100%;
+}
+
 #root {
   max-width: 1280px;
   margin: 0 auto;

@@ -10,6 +10,15 @@ import { Container, Row, Col, Card, Button, Form, ListGroup, Badge, Navbar, Nav,
 
 const pcgLogo = 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Presbyterian_Church_of_Ghana_Crest.png/330px-Presbyterian_Church_of_Ghana_Crest.png';
 
+// dynamic API base: if running on mobile, use current hostname with port 5001
+const API_BASE = (function(){
+  try {
+    const loc = window.location;
+    // when frontend and backend run on same host, replace port with 5001
+    return `${loc.protocol}//${loc.hostname}:5001`;
+  } catch(e) { return 'http://localhost:5001'; }
+})();
+
 
 
 function AdminPortal({ onLogout, authToken }) {
@@ -34,7 +43,7 @@ function AdminPortal({ onLogout, authToken }) {
     e.preventDefault();
     setRegisterMsg('');
     try {
-      const res = await fetch('http://localhost:5001/api/members', {
+  const res = await fetch(`${API_BASE}/api/members`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(member)
@@ -54,14 +63,14 @@ function AdminPortal({ onLogout, authToken }) {
 
   // Fetch members
   const fetchMembers = async () => {
-  const res = await fetch('http://localhost:5001/api/members', { headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {} });
+  const res = await fetch(`${API_BASE}/api/members`, { headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {} });
     const data = await res.json();
     setMembers(data);
   };
 
   // Fetch payments
   const fetchPayments = async () => {
-  const res = await fetch('http://localhost:5001/api/payments', { headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {} });
+  const res = await fetch(`${API_BASE}/api/payments`, { headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {} });
     const data = await res.json();
     setPayments(data);
   };
@@ -71,7 +80,7 @@ function AdminPortal({ onLogout, authToken }) {
     e.preventDefault();
     setPaymentMsg('');
     try {
-      const res = await fetch('http://localhost:5001/api/payments', {
+  const res = await fetch(`${API_BASE}/api/payments`, {
         method: 'POST',
         headers: Object.assign({ 'Content-Type': 'application/json' }, authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
         body: JSON.stringify({
@@ -98,7 +107,7 @@ function AdminPortal({ onLogout, authToken }) {
     // load birthday template
     (async () => {
       try {
-        const res = await fetch('http://localhost:5001/api/sms/birthday-template', { headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {} });
+  const res = await fetch(`${API_BASE}/api/sms/birthday-template`, { headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {} });
         if (res.ok) {
           const data = await res.json();
           setBirthdayTemplate(data.template || '');
@@ -248,7 +257,7 @@ function AdminPortal({ onLogout, authToken }) {
                           // build per-recipient payloads with {name} replacement
                           const targets = members.filter(m => selectedMembers.includes(m.id));
                           const payloads = targets.map(t => ({ to: t.phone, message: bulkMessage.replace(/\{name\}/g, t.name) }));
-                          const res = await fetch('http://localhost:5001/api/sms/bulk', {
+                          const res = await fetch(`${API_BASE}/api/sms/bulk`, {
                             method: 'POST',
                             headers: Object.assign({ 'Content-Type': 'application/json' }, authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
                             body: JSON.stringify({ payloads })
@@ -265,7 +274,7 @@ function AdminPortal({ onLogout, authToken }) {
                       <Button variant="outline-primary" onClick={async () => {
                         // trigger birthday endpoint
                         try {
-                          const res = await fetch('http://localhost:5001/api/sms/birthday', { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, authToken ? { 'Authorization': `Bearer ${authToken}` } : {}), body: JSON.stringify({ template: null }) });
+                          const res = await fetch(`${API_BASE}/api/sms/birthday`, { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, authToken ? { 'Authorization': `Bearer ${authToken}` } : {}), body: JSON.stringify({ template: null }) });
                           const data = await res.json();
                           if (res.ok) alert('Birthday send complete: ' + (data.count || 0)); else alert(data.error || 'Failed');
                         } catch (err) { alert('Server error'); }
@@ -277,7 +286,7 @@ function AdminPortal({ onLogout, authToken }) {
                       <div className="d-flex gap-2 mt-2">
                         <Button onClick={async () => {
                           try {
-                            const res = await fetch('http://localhost:5001/api/sms/birthday-template', { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, authToken ? { 'Authorization': `Bearer ${authToken}` } : {}), body: JSON.stringify({ template: birthdayTemplate }) });
+                            const res = await fetch(`${API_BASE}/api/sms/birthday-template`, { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, authToken ? { 'Authorization': `Bearer ${authToken}` } : {}), body: JSON.stringify({ template: birthdayTemplate }) });
                             const data = await res.json();
                             if (res.ok) setTemplateMsg('Template saved'); else setTemplateMsg(data.error || 'Save failed');
                           } catch (e) { setTemplateMsg('Server error'); }
@@ -288,7 +297,7 @@ function AdminPortal({ onLogout, authToken }) {
                           try {
                             const targets = members.filter(m => selectedMembers.includes(m.id));
                             const payloads = targets.map(t => ({ to: t.phone, message: (birthdayTemplate || '').replace(/\{name\}/g, t.name) }));
-                            const res = await fetch('http://localhost:5001/api/sms/bulk', {
+                            const res = await fetch(`${API_BASE}/api/sms/bulk`, {
                               method: 'POST',
                               headers: Object.assign({ 'Content-Type': 'application/json' }, authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
                               body: JSON.stringify({ payloads })
