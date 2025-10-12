@@ -9,12 +9,20 @@ const admins = [
 ];
 
 function addAdmin({ username, password }) {
+  // enforce single-admin policy: don't allow creating more than one admin
+  if (admins.length >= 1) {
+    return { error: 'Admin already exists. Only one admin account is allowed.' };
+  }
   if (admins.find(a => a.username === username)) {
     return { error: 'Username already exists' };
   }
   const passwordHash = bcrypt.hashSync(password, 8);
   admins.push({ username, passwordHash });
   return { success: true };
+}
+
+function getAdminCount() {
+  return admins.length;
 }
 
 function authenticateAdmin({ username, password }) {
@@ -39,4 +47,4 @@ function verifyToken(req) {
   }
 }
 
-module.exports = { addAdmin, authenticateAdmin, verifyToken };
+module.exports = { addAdmin, authenticateAdmin, verifyToken, getAdminCount };
