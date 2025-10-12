@@ -10,7 +10,7 @@ app.use(express.json());
 
 // Placeholder routes
 app.get('/', (req, res) => {
-  res.send('Presbyterian Church of Ghana API running');
+  res.send('Christ Congregation Nkawkaw — Presbyterian Church of Ghana API running');
 });
 
 
@@ -153,7 +153,7 @@ app.post('/api/sms/birthday', requireAuth, async (req, res) => {
   if (targets.length === 0) return res.json({ success: true, message: 'No birthdays today' });
   const recipients = targets.map(t => t.phone);
   const messages = targets.map(t => {
-    const tmpl = template || birthdayTemplate || `Happy Birthday, {name}! Blessings on your special day from the Presbyterian Church of Ghana.`;
+  const tmpl = template || birthdayTemplate || `Happy Birthday, {name}! Blessings on your special day from Christ Congregation Nkawkaw — Presbyterian Church of Ghana.`;
     return tmpl.replace(/\{name\}/g, t.name);
   });
   // send messages individually so personalization is kept
@@ -211,7 +211,7 @@ async function runBirthdayCheck() {
   });
   const results = [];
   for (const t of targets) {
-  const tmpl = birthdayTemplate || `Happy Birthday, {name}! Blessings on your special day from the Presbyterian Church of Ghana.`;
+  const tmpl = birthdayTemplate || `Happy Birthday, {name}! Blessings on your special day from Christ Congregation Nkawkaw — Presbyterian Church of Ghana.`;
   const msg = tmpl.replace(/\{name\}/g, t.name);
     try {
       const r = await sendSMS(t.phone, msg);

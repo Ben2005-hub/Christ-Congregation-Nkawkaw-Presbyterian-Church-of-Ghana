@@ -8,7 +8,7 @@ import Login from './Login';
 import Member from './Member';
 import { Container, Row, Col, Card, Button, Form, ListGroup, Badge, Navbar, Nav, Modal } from 'react-bootstrap';
 
-const pcgLogo = 'https://www.nicepng.com/png/detail/219-2193162_presbyterian-church-of-ghana-logo-presbyterian-church-ghana.png';
+const pcgLogo = 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Presbyterian_Church_of_Ghana_Crest.png/330px-Presbyterian_Church_of_Ghana_Crest.png';
 
 
 
@@ -119,7 +119,7 @@ function AdminPortal({ onLogout, authToken }) {
             <img src={pcgLogo} alt="Christ Congregation Nkakaw" className="logo styled-logo me-2" style={{maxWidth:50, height:'auto'}} />
             <div className="d-flex flex-column">
               <span className="fw-bold">Christ Congregation Nkakaw</span>
-              <small className="text-muted">Presbyterian Church of Ghana</small>
+              <small className="text-muted">Christ Congregation Nkawkaw — Presbyterian Church of Ghana</small>
             </div>
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="main-navbar" />
@@ -399,8 +399,8 @@ function App() {
       <Navbar bg="light" expand="lg" className="mb-4 rounded shadow-sm">
         <Container>
           <Navbar.Brand href="#">
-            <img src={pcgLogo} alt="Presbyterian Church of Ghana Logo" className="logo styled-logo me-2" style={{width:50, height:50}} />
-            <span className="fw-bold">Presbyterian Church of Ghana</span>
+            <img src={pcgLogo} alt="Christ Congregation Nkawkaw Logo" className="logo styled-logo me-2" style={{width:50, height:50}} />
+            <span className="fw-bold">Christ Congregation Nkawkaw — Presbyterian Church of Ghana</span>
           </Navbar.Brand>
           <Nav className="ms-auto">
             <Nav.Link onClick={() => setView('member')}>Member</Nav.Link>

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import './App.css';
 import { Container, Card, Button, Form, Navbar } from 'react-bootstrap';
 
-const pcgLogo = 'https://www.nicepng.com/png/detail/219-2193162_presbyterian-church-of-ghana-logo-presbyterian-church-ghana.png';
+const pcgLogo = 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Presbyterian_Church_of_Ghana_Crest.png/330px-Presbyterian_Church_of_Ghana_Crest.png';
 
 export default function Member() {
   const [member, setMember] = useState({ name: '', phone: '', type: 'new', dob: '' });
@@ -36,8 +36,8 @@ export default function Member() {
       <Navbar bg="light" expand="lg" className="mb-4 rounded shadow-sm">
         <Container>
           <Navbar.Brand href="#">
-            <img src={pcgLogo} alt="Presbyterian Church of Ghana Logo" className="logo styled-logo me-2" style={{width:50, height:50}} />
-            <span className="fw-bold">Presbyterian Church of Ghana</span>
+            <img src={pcgLogo} alt="Christ Congregation Nkawkaw Logo" className="logo styled-logo me-2" style={{width:50, height:50}} />
+            <span className="fw-bold">Christ Congregation Nkawkaw — Presbyterian Church of Ghana</span>
           </Navbar.Brand>
         </Container>
       </Navbar>
