@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "type": "new",
+    "name": "Test Birthday",
+    "dob": "2025-10-12",
+    "phone": "+233501234567",
+    "lastBirthdaySent": "2025-10-12"
+  },
+  {
+    "id": 2,
+    "type": "new",
+    "name": "Auto Test Member",
+    "dob": "1992-03-04",
+    "phone": "+233501234569",
+    "lastBirthdaySent": null
+  },
+  {
+    "id": 3,
+    "type": "new",
+    "name": "Auto Test Member 2",
+    "dob": "1993-06-07",
+    "phone": "+233501234570",
+    "lastBirthdaySent": null
+  }
+]

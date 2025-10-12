@@ -10,14 +10,17 @@ import { Container, Row, Col, Card, Button, Form, ListGroup, Badge, Navbar, Nav,
 
 const pcgLogo = 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Presbyterian_Church_of_Ghana_Crest.png/330px-Presbyterian_Church_of_Ghana_Crest.png';
 
-// dynamic API base: if running on mobile, use current hostname with port 5001
-const API_BASE = (function(){
+// dynamic API base with optional local override (helps phones / LAN testing)
+function getApiBase() {
   try {
+    const override = localStorage.getItem('api_base_override');
+    if (override && override.trim()) return override.trim();
     const loc = window.location;
-    // when frontend and backend run on same host, replace port with 5001
     return `${loc.protocol}//${loc.hostname}:5001`;
-  } catch(e) { return 'http://localhost:5001'; }
-})();
+  } catch (e) {
+    return 'http://localhost:5001';
+  }
+}
 
 
 
@@ -46,7 +49,7 @@ function AdminPortal({ onLogout, authToken }) {
     e.preventDefault();
     setRegisterMsg('');
     try {
-  const res = await fetch(`${API_BASE}/api/members`, {
+  const res = await fetch(`${getApiBase()}/api/members`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(member)
@@ -66,14 +69,14 @@ function AdminPortal({ onLogout, authToken }) {
 
   // Fetch members
   const fetchMembers = async () => {
-  const res = await fetch(`${API_BASE}/api/members`, { headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {} });
+  const res = await fetch(`${getApiBase()}/api/members`, { headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {} });
     const data = await res.json();
     setMembers(data);
   };
 
   // Fetch payments
   const fetchPayments = async () => {
-  const res = await fetch(`${API_BASE}/api/payments`, { headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {} });
+  const res = await fetch(`${getApiBase()}/api/payments`, { headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {} });
     const data = await res.json();
     setPayments(data);
   };
@@ -83,7 +86,7 @@ function AdminPortal({ onLogout, authToken }) {
     e.preventDefault();
     setPaymentMsg('');
     try {
-  const res = await fetch(`${API_BASE}/api/payments`, {
+  const res = await fetch(`${getApiBase()}/api/payments`, {
         method: 'POST',
         headers: Object.assign({ 'Content-Type': 'application/json' }, authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
         body: JSON.stringify({
@@ -112,7 +115,7 @@ function AdminPortal({ onLogout, authToken }) {
     // load birthday template
     (async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/sms/birthday-template`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+  const res = await fetch(`${getApiBase()}/api/sms/birthday-template`, { headers: { 'Authorization': `Bearer ${authToken}` } });
         if (res.ok) {
           const data = await res.json();
           setBirthdayTemplate(data.template || '');
@@ -127,7 +130,7 @@ function AdminPortal({ onLogout, authToken }) {
     const t = setTimeout(async () => {
       setSearchLoading(true);
       try {
-        const res = await fetch(`${API_BASE}/api/members/search?q=${encodeURIComponent(searchQ)}`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+  const res = await fetch(`${getApiBase()}/api/members/search?q=${encodeURIComponent(searchQ)}`, { headers: { 'Authorization': `Bearer ${authToken}` } });
         const data = await res.json();
         setSearchResults(data || []);
       } catch (e) { setSearchResults([]); }
@@ -233,7 +236,7 @@ function AdminPortal({ onLogout, authToken }) {
                           <Button size="sm" variant="outline-primary" onClick={async () => {
                             // load payments for this member
                             try {
-                              const r = await fetch(`${API_BASE}/api/payments/member/${s.id}`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+                              const r = await fetch(`${getApiBase()}/api/payments/member/${s.id}`, { headers: { 'Authorization': `Bearer ${authToken}` } });
                               const list = await r.json();
                               // show payments in the payments pane
                               setPayments(list);
@@ -242,7 +245,7 @@ function AdminPortal({ onLogout, authToken }) {
                           <Button size="sm" variant="danger" onClick={async () => {
                             if (!confirm('Delete member? This cannot be undone.')) return;
                             try {
-                              const r = await fetch(`${API_BASE}/api/members/${s.id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${authToken}` } });
+                              const r = await fetch(`${getApiBase()}/api/members/${s.id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${authToken}` } });
                               const d = await r.json();
                               if (r.ok) { alert('Deleted'); fetchMembers(); setSearchResults(prev => prev.filter(x => x.id !== s.id)); }
                               else alert(d.error || 'Delete failed');
@@ -314,7 +317,7 @@ function AdminPortal({ onLogout, authToken }) {
                           // build per-recipient payloads with {name} replacement
                           const targets = members.filter(m => selectedMembers.includes(m.id));
                           const payloads = targets.map(t => ({ to: t.phone, message: bulkMessage.replace(/\{name\}/g, t.name) }));
-                          const res = await fetch(`${API_BASE}/api/sms/bulk`, {
+                          const res = await fetch(`${getApiBase()}/api/sms/bulk`, {
                             method: 'POST',
                             headers: Object.assign({ 'Content-Type': 'application/json' }, authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
                             body: JSON.stringify({ payloads })
@@ -331,7 +334,7 @@ function AdminPortal({ onLogout, authToken }) {
                       <Button variant="outline-primary" onClick={async () => {
                         // trigger birthday endpoint
                         try {
-                          const res = await fetch(`${API_BASE}/api/sms/birthday`, { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, authToken ? { 'Authorization': `Bearer ${authToken}` } : {}), body: JSON.stringify({ template: null }) });
+                          const res = await fetch(`${getApiBase()}/api/sms/birthday`, { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, authToken ? { 'Authorization': `Bearer ${authToken}` } : {}), body: JSON.stringify({ template: null }) });
                           const data = await res.json();
                           if (res.ok) alert('Birthday send complete: ' + (data.count || 0)); else alert(data.error || 'Failed');
                         } catch (err) { alert('Server error'); }
@@ -343,7 +346,7 @@ function AdminPortal({ onLogout, authToken }) {
                       <div className="d-flex gap-2 mt-2">
                         <Button onClick={async () => {
                           try {
-                            const res = await fetch(`${API_BASE}/api/sms/birthday-template`, { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, authToken ? { 'Authorization': `Bearer ${authToken}` } : {}), body: JSON.stringify({ template: birthdayTemplate }) });
+                            const res = await fetch(`${getApiBase()}/api/sms/birthday-template`, { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, authToken ? { 'Authorization': `Bearer ${authToken}` } : {}), body: JSON.stringify({ template: birthdayTemplate }) });
                             const data = await res.json();
                             if (res.ok) setTemplateMsg('Template saved'); else setTemplateMsg(data.error || 'Save failed');
                           } catch (e) { setTemplateMsg('Server error'); }
@@ -354,7 +357,7 @@ function AdminPortal({ onLogout, authToken }) {
                           try {
                             const targets = members.filter(m => selectedMembers.includes(m.id));
                             const payloads = targets.map(t => ({ to: t.phone, message: (birthdayTemplate || '').replace(/\{name\}/g, t.name) }));
-                            const res = await fetch(`${API_BASE}/api/sms/bulk`, {
+                            const res = await fetch(`${getApiBase()}/api/sms/bulk`, {
                               method: 'POST',
                               headers: Object.assign({ 'Content-Type': 'application/json' }, authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
                               body: JSON.stringify({ payloads })
@@ -462,6 +465,22 @@ function App() {
   const [debugFetch, setDebugFetch] = useState('');
   const [serverStatus, setServerStatus] = useState('unknown');
 
+  // helper to check server health
+  const checkServer = async () => {
+    try {
+  const r = await fetch(`${getApiBase()}/`);
+      if (r.ok) {
+        setServerStatus('ok');
+        return true;
+      }
+      setServerStatus('error');
+      return false;
+    } catch (e) {
+      setServerStatus('error');
+      return false;
+    }
+  };
+
   // restore token from localStorage if present
   useEffect(() => {
     try {
@@ -473,12 +492,13 @@ function App() {
       }
     } catch (e) {}
     // quick server ping on load
-    (async () => {
-      try {
-        const r = await fetch(`${API_BASE}/`);
-        if (r.ok) setServerStatus('ok'); else setServerStatus('error');
-      } catch (e) { setServerStatus('error'); }
-    })();
+    checkServer();
+    // keep retrying every 10s until server becomes available (helps if backend starts after frontend)
+    const id = setInterval(() => {
+      if (serverStatus === 'ok') return;
+      checkServer();
+    }, 10000);
+    return () => clearInterval(id);
   }, []);
 
   return (
@@ -510,11 +530,11 @@ function App() {
         loggedIn ? (
           <AdminPortal authToken={authToken} onLogout={() => { try { localStorage.removeItem('admin_token'); } catch (e) {}; setLoggedIn(false); setAuthToken(null); setView('member'); }} />
         ) : (
-          <Login serverStatus={serverStatus} onLogin={(token) => { try { localStorage.setItem('admin_token', token); } catch(e){}; setAuthToken(token); setLoggedIn(true); setView('admin');
+          <Login serverStatus={serverStatus} checkServer={checkServer} onLogin={(token) => { try { localStorage.setItem('admin_token', token); } catch(e){}; setAuthToken(token); setLoggedIn(true); setView('admin');
               // immediately validate token by fetching members and show result in debug panel
               (async () => {
                 try {
-                  const res = await fetch(`${API_BASE}/api/members`, { headers: { 'Authorization': `Bearer ${token}` } });
+                  const res = await fetch(`${getApiBase()}/api/members`, { headers: { 'Authorization': `Bearer ${token}` } });
                   if (!res.ok) {
                     const err = await res.json().catch(() => null);
                     setDebugFetch('fetch-error: ' + (err?.error || res.status));

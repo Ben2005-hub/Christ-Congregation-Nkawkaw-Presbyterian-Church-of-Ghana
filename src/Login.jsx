@@ -1,10 +1,9 @@
 import { useState } from 'react';
-
-const API_BASE = (function(){ try { const loc = window.location; return `${loc.protocol}//${loc.hostname}:5001`; } catch(e){ return 'http://localhost:5001'; } })();
+import getApiBase from './apiBase';
 import './App.css';
 
 
-function Login({ onLogin, serverStatus }) {
+function Login({ onLogin, serverStatus, checkServer }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -16,7 +15,7 @@ function Login({ onLogin, serverStatus }) {
     setError('');
     setSuccess('');
     try {
-  const res = await fetch(`${API_BASE}/api/admin/login`, {
+  const res = await fetch(`${getApiBase()}/api/admin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
@@ -41,7 +40,7 @@ function Login({ onLogin, serverStatus }) {
     setError('');
     setSuccess('');
     try {
-  const res = await fetch(`${API_BASE}/api/admin/signup`, {
+  const res = await fetch(`${getApiBase()}/api/admin/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
@@ -62,7 +61,12 @@ function Login({ onLogin, serverStatus }) {
     <div className="container">
       <h2>{signup ? 'Admin Signup' : 'Admin Login'}</h2>
       {serverStatus !== 'ok' && (
-        <p style={{ color: 'darkred' }}>Server appears unreachable ({serverStatus}). Please start the backend and try again.</p>
+        <div>
+          <p style={{ color: 'darkred' }}>Server appears unreachable ({serverStatus}). Please start the backend and try again.</p>
+          <div style={{ marginBottom: 8 }}>
+            <button type="button" onClick={async () => { try { const ok = await checkServer(); if (!ok) alert('Still unreachable'); else alert('Server is now reachable, please login'); } catch(e){ alert('Check failed'); } }} style={{ background: 'none', border: '1px solid #ccc', padding: '6px 10px', borderRadius: 4 }}>Check server</button>
+          </div>
+        </div>
       )}
       <form onSubmit={signup ? handleSignup : handleLogin}>
         <input
