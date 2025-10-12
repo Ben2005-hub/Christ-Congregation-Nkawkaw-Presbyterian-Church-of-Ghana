@@ -33,6 +33,9 @@ function AdminPortal({ onLogout, authToken }) {
   const [paymentMsg, setPaymentMsg] = useState('');
   const [members, setMembers] = useState([]);
   const [payments, setPayments] = useState([]);
+  const [searchQ, setSearchQ] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [activeMember, setActiveMember] = useState(null);
   const [birthdayTemplate, setBirthdayTemplate] = useState('');
@@ -116,6 +119,21 @@ function AdminPortal({ onLogout, authToken }) {
     })();
   }, []);
 
+  // Admin live search (debounced)
+  useEffect(() => {
+    if (!searchQ || searchQ.trim().length < 2) { setSearchResults([]); return; }
+    const t = setTimeout(async () => {
+      setSearchLoading(true);
+      try {
+        const res = await fetch(`${API_BASE}/api/members/search?q=${encodeURIComponent(searchQ)}`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+        const data = await res.json();
+        setSearchResults(data || []);
+      } catch (e) { setSearchResults([]); }
+      setSearchLoading(false);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [searchQ]);
+
   // Dashboard summary
   const totalTithes = payments.filter(p => p.type === 'tithe').reduce((sum, p) => sum + Number(p.amount), 0);
   const totalFuneral = payments.filter(p => p.type === 'funeral').reduce((sum, p) => sum + Number(p.amount), 0);
@@ -197,6 +215,43 @@ function AdminPortal({ onLogout, authToken }) {
           <Card className="mb-3 shadow-sm">
             <Card.Body>
               <Card.Title>Make Payment</Card.Title>
+              <div className="mb-3">
+                <Form.Label>Search members (name or phone)</Form.Label>
+                <Form.Control placeholder="Search..." value={searchQ} onChange={e => setSearchQ(e.target.value)} />
+                {searchLoading && <div className="mt-2">Searching...</div>}
+                {searchResults.length > 0 && (
+                  <ListGroup className="mt-2">
+                    {searchResults.map(s => (
+                      <ListGroup.Item key={s.id} className="d-flex justify-content-between align-items-start">
+                        <div>
+                          <div><strong>{s.name}</strong></div>
+                          <small className="text-muted">{s.phone}</small>
+                        </div>
+                        <div className="d-flex gap-2">
+                          <Button size="sm" variant="outline-primary" onClick={async () => {
+                            // load payments for this member
+                            try {
+                              const r = await fetch(`${API_BASE}/api/payments/member/${s.id}`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+                              const list = await r.json();
+                              // show payments in the payments pane
+                              setPayments(list);
+                            } catch (e) { }
+                          }}>View Payments</Button>
+                          <Button size="sm" variant="danger" onClick={async () => {
+                            if (!confirm('Delete member? This cannot be undone.')) return;
+                            try {
+                              const r = await fetch(`${API_BASE}/api/members/${s.id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${authToken}` } });
+                              const d = await r.json();
+                              if (r.ok) { alert('Deleted'); fetchMembers(); setSearchResults(prev => prev.filter(x => x.id !== s.id)); }
+                              else alert(d.error || 'Delete failed');
+                            } catch (e) { alert('Server error'); }
+                          }}>Delete</Button>
+                        </div>
+                      </ListGroup.Item>
+                    ))}
+                  </ListGroup>
+                )}
+              </div>
               <Form onSubmit={handlePayment}>
                 <Row>
                   <Col md={5} className="mb-2">

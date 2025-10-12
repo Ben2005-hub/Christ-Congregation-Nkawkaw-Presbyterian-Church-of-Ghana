@@ -79,7 +79,7 @@ app.post('/api/members', async (req, res) => {
   res.status(201).json(member);
 });
 
-// Get all members
+// Get all members (admin)
 app.get('/api/members', requireAuth, (req, res) => {
   res.json(getAllMembers());
 });
@@ -88,6 +88,23 @@ app.get('/api/members', requireAuth, (req, res) => {
 app.get('/api/members/public', (req, res) => {
   const list = getAllMembers().map(m => ({ id: m.id, name: m.name, phone: m.phone, dob: m.dob, type: m.type }));
   res.json(list);
+});
+
+// Admin: search members by name or phone (quick)
+app.get('/api/members/search', requireAuth, (req, res) => {
+  const q = (req.query.q || '').toLowerCase().trim();
+  if (!q) return res.json([]);
+  const results = getAllMembers().filter(m => (m.name && m.name.toLowerCase().includes(q)) || (m.phone && m.phone.includes(q)));
+  res.json(results);
+});
+
+// Admin: delete a member
+app.delete('/api/members/:id', requireAuth, (req, res) => {
+  const id = Number(req.params.id);
+  if (!id) return res.status(400).json({ error: 'Invalid id' });
+  const ok = deleteMember(id);
+  if (!ok) return res.status(404).json({ error: 'Member not found' });
+  res.json({ success: true });
 });
 
 
@@ -119,8 +136,18 @@ app.post('/api/payments', async (req, res) => {
 });
 
 // Get all payments
+// Admin: get all payments
 app.get('/api/payments', requireAuth, (req, res) => {
   res.json(getAllPayments());
+});
+
+// Admin: get payments for a member
+app.get('/api/payments/member/:id', requireAuth, (req, res) => {
+  const id = Number(req.params.id);
+  if (!id) return res.status(400).json({ error: 'Invalid id' });
+  const { getPaymentsForMember } = require('./payments');
+  const list = getPaymentsForMember(id);
+  res.json(list);
 });
 
 // Bulk SMS endpoint: { to: string|[string], message: string }

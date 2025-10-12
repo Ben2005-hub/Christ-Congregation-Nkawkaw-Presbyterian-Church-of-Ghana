@@ -66,8 +66,17 @@ function setLastBirthdaySent(memberId, dateStr) {
   return m;
 }
 
+function deleteMember(memberId) {
+  const idx = members.findIndex(m => m.id === memberId);
+  if (idx === -1) return false;
+  members.splice(idx, 1);
+  persist();
+  return true;
+}
+
 module.exports = {
   registerMember,
   getAllMembers,
-  setLastBirthdaySent
+  setLastBirthdaySent,
+  deleteMember
 };
