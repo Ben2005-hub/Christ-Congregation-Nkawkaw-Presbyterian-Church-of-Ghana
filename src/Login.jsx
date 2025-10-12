@@ -26,6 +26,8 @@ function Login({ onLogin }) {
         // persist token so page reloads keep session
         try { localStorage.setItem('admin_token', data.token); } catch (e) {}
         onLogin(data.token);
+        // reload page to ensure app restores token and shows AdminPortal (helps on some browsers/devices)
+        try { window.location.reload(); } catch (e) {}
       } else {
         setError(data.error || 'Invalid credentials');
       }
