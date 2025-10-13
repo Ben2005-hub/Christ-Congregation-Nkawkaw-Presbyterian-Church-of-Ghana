@@ -22,5 +22,13 @@
     "dob": "1993-06-07",
     "phone": "+233501234570",
     "lastBirthdaySent": null
+  },
+  {
+    "id": 4,
+    "name": "Mystic",
+    "phone": "0246075070",
+    "type": "new",
+    "dob": "2001-01-01",
+    "lastBirthdaySent": null
   }
 ]
