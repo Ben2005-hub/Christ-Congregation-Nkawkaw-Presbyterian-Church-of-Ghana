@@ -464,6 +464,7 @@ function App() {
   const [authToken, setAuthToken] = useState(null);
   const [debugFetch, setDebugFetch] = useState('');
   const [serverStatus, setServerStatus] = useState('unknown');
+  const [apiOverride, setApiOverride] = useState(() => { try { return localStorage.getItem('api_base_override') || ''; } catch(e) { return ''; } });
 
   // helper to check server health
   const checkServer = async () => {
@@ -523,6 +524,14 @@ function App() {
           <div>token: {authToken ? (String(authToken).slice(0,8) + '...') : 'none'}</div>
           <div style={{ marginTop: 6, color: '#444' }}>check: {debugFetch || 'idle'}</div>
           <div style={{ marginTop: 4, color: serverStatus === 'ok' ? 'green' : '#a00' }}>server: {serverStatus}</div>
+          <div style={{ marginTop: 6 }}>
+            <label style={{ fontSize: 11, color: '#666' }}>API base override</label>
+            <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+              <input value={apiOverride} onChange={e => setApiOverride(e.target.value)} placeholder="http://192.168.1.10:5001" style={{ fontSize: 12, padding: '4px 6px', width: 200 }} />
+              <button onClick={() => { try { localStorage.setItem('api_base_override', apiOverride); checkServer(); alert('Saved override'); } catch(e){ alert('Save failed'); } }} style={{ fontSize: 12, padding: '4px 6px' }}>Save</button>
+              <button onClick={() => { try { localStorage.removeItem('api_base_override'); setApiOverride(''); checkServer(); alert('Cleared override'); } catch(e){ alert('Clear failed'); } }} style={{ fontSize: 12, padding: '4px 6px' }}>Clear</button>
+            </div>
+          </div>
         </div>
       </div>
 
