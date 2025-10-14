@@ -273,8 +273,21 @@ const mode = process.env.BIRTHDAY_MODE || 'prod';
     runBirthdayCheck().catch(err => console.error('Scheduled birthday check error', err.message));
   }, intervalMs);
 })();
+// Health check route for testing and monitoring
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', message: 'Backend running successfully!' });
+});
 
 // TODO: Add SMS integration
+
+// Simple homepage route (root)
+app.get('/', (req, res) => {
+  res.send(`
+    <h1>Christ Congregation Nkawkaw - Presbyterian Church Backend</h1>
+    <p>Welcome to the official backend API of Christ Congregation Nkawkaw - PCG.</p>
+    <p>Status: Online ✅</p>
+  `);
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
