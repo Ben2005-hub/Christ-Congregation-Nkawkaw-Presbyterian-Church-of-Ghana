@@ -16,7 +16,7 @@ function getApiBase() {
     const override = localStorage.getItem('api_base_override');
     if (override && override.trim()) return override.trim();
     const loc = window.location;
-    return `https://christ-congregation-nkawkaw-presbyterian.onrender.com'`;
+    return `https://christ-congregation-nkawkaw-presbyterian.onrender.com`;
   } catch (e) {
     return 'https://christ-congregation-nkawkaw-presbyterian.onrender.com';
   }
