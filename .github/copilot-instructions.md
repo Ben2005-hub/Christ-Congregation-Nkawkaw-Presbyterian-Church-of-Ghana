@@ -1,8 +1,7 @@
-<!-- Use this file to provide workspace-specific custom instructions to Copilot. For more details, visit https://code.visualstudio.com/docs/copilot/copilot-customization#_use-a-githubcopilotinstructionsmd-file -->
-
+My project Instructions
 This project is a full-stack web application for the Presbyterian Church of Ghana. It includes a React frontend, Node.js/Express backend, and Twilio SMS integration. Prioritize clean code, security, and user-friendly design.
 
-Guidance for AI agents working on this repository
+Guidance for working on this repository
 -------------------------------------------------
 
 Summary (big picture):

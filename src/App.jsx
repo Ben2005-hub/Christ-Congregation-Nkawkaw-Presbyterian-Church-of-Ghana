@@ -16,9 +16,9 @@ function getApiBase() {
     const override = localStorage.getItem('api_base_override');
     if (override && override.trim()) return override.trim();
     const loc = window.location;
-    return `${loc.protocol}//${loc.hostname}:5001`;
+    return `https://christ-congregation-nkawkaw-presbyterian.onrender.com'`;
   } catch (e) {
-    return 'http://localhost:5001';
+    return 'https://christ-congregation-nkawkaw-presbyterian.onrender.com';
   }
 }
 
@@ -516,8 +516,8 @@ function App() {
           </Nav>
         </Container>
       </Navbar>
-      <div style={{ position: 'fixed', right: 12, top: 80, zIndex: 1050 }}>
-        <div style={{ background: '#fff', padding: 8, borderRadius: 6, boxShadow: '0 1px 4px rgba(0,0,0,0.1)', fontSize: 12 }}>
+       {/*<div style={{ position: 'fixed', right: 12, top: 80, zIndex: 1050 }}>
+       <div style={{ background: '#fff', padding: 8, borderRadius: 6, boxShadow: '0 1px 4px rgba(0,0,0,0.1)', fontSize: 12 }}>
           <div><strong>DEBUG</strong></div>
           <div>view: {view}</div>
           <div>loggedIn: {loggedIn ? 'true' : 'false'}</div>
@@ -533,7 +533,7 @@ function App() {
             </div>
           </div>
         </div>
-      </div>
+      </div>*/}
 
       {view === 'admin' ? (
         loggedIn ? (
