@@ -1,4 +1,4 @@
-// Entry point for Express backend
+// Christ Congregation Nkawkaw — Presbyterian Church of Ghana Backend
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -8,19 +8,13 @@ const PORT = process.env.PORT || 5001;
 app.use(cors());
 app.use(express.json());
 
-// Placeholder routes
-app.get('/', (req, res) => {
-  res.send('Christ Congregation Nkawkaw — Presbyterian Church of Ghana API running');
-});
-
-
-// Member logic
-const { registerMember, getAllMembers } = require('./members');
-const { setLastBirthdaySent } = require('./members');
-
-// Admin logic
+// ========== ROUTE IMPORTS ==========
+const { registerMember, getAllMembers, setLastBirthdaySent } = require('./members');
 const { addAdmin, authenticateAdmin, verifyToken } = require('./admins');
+const { recordPayment, getAllPayments, getPaymentsForMember } = require('./payments');
+const { sendSMS, sendBulkSMS } = require('./sms');
 
+// ========== AUTH MIDDLEWARE ==========
 function requireAuth(req, res, next) {
   const payload = verifyToken(req);
   if (!payload) return res.status(401).json({ error: 'Unauthorized' });
@@ -28,50 +22,38 @@ function requireAuth(req, res, next) {
   next();
 }
 
-// Admin signup
+// ========== ADMIN ROUTES ==========
 app.post('/api/admin/signup', (req, res) => {
   const { username, password } = req.body;
-  if (!username || !password) {
+  if (!username || !password)
     return res.status(400).json({ error: 'Username and password are required' });
-  }
+
   const result = addAdmin({ username, password });
-  if (result.error) {
-    return res.status(400).json({ error: result.error });
-  }
+  if (result.error) return res.status(400).json({ error: result.error });
   res.status(201).json({ success: true });
 });
 
-// Admin login
 app.post('/api/admin/login', (req, res) => {
   const { username, password } = req.body;
-  if (!username || !password) {
+  if (!username || !password)
     return res.status(400).json({ error: 'Username and password are required' });
-  }
+
   const result = authenticateAdmin({ username, password });
   if (result.error) return res.status(401).json({ error: result.error });
   res.json(result);
 });
 
-
-// SMS logic
-const { sendSMS } = require('./sms');
-
-// new bulk SMS helper
-const { sendBulkSMS } = require('./sms');
-
-// Register a new member
-
-// Register a new member (SMS sending temporarily disabled)
+// ========== MEMBER ROUTES ==========
 app.post('/api/members', async (req, res) => {
   const data = req.body;
-  if (!data.name || !data.phone) {
+  if (!data.name || !data.phone)
     return res.status(400).json({ error: 'Name and phone are required' });
-  }
+
   const member = registerMember(data);
   try {
-      await sendSMS(
-        data.phone,
-        `Welcome to Christ Congregation Nkakaw — Presbyterian Church of Ghana, ${data.name}! Your registration is successful.`
+    await sendSMS(
+      data.phone,
+      `Welcome to Christ Congregation Nkawkaw — Presbyterian Church of Ghana, ${data.name}! Your registration is successful.`
     );
   } catch (err) {
     console.error('SMS error:', err.message);
@@ -79,54 +61,56 @@ app.post('/api/members', async (req, res) => {
   res.status(201).json(member);
 });
 
-// Get all members (admin)
 app.get('/api/members', requireAuth, (req, res) => {
   res.json(getAllMembers());
 });
 
-// Public members list (limited fields) for member-facing lookups
 app.get('/api/members/public', (req, res) => {
-  const list = getAllMembers().map(m => ({ id: m.id, name: m.name, phone: m.phone, dob: m.dob, type: m.type }));
+  const list = getAllMembers().map(m => ({
+    id: m.id,
+    name: m.name,
+    phone: m.phone,
+    dob: m.dob,
+    type: m.type
+  }));
   res.json(list);
 });
 
-// Admin: search members by name or phone (quick)
 app.get('/api/members/search', requireAuth, (req, res) => {
   const q = (req.query.q || '').toLowerCase().trim();
   if (!q) return res.json([]);
-  const results = getAllMembers().filter(m => (m.name && m.name.toLowerCase().includes(q)) || (m.phone && m.phone.includes(q)));
+  const results = getAllMembers().filter(
+    m =>
+      (m.name && m.name.toLowerCase().includes(q)) ||
+      (m.phone && m.phone.includes(q))
+  );
   res.json(results);
 });
 
-// Admin: delete a member
 app.delete('/api/members/:id', requireAuth, (req, res) => {
   const id = Number(req.params.id);
   if (!id) return res.status(400).json({ error: 'Invalid id' });
+  const { deleteMember } = require('./members');
   const ok = deleteMember(id);
   if (!ok) return res.status(404).json({ error: 'Member not found' });
   res.json({ success: true });
 });
 
-
-// Payment logic
-const { recordPayment, getAllPayments } = require('./payments');
-
-
-// Record a payment (tithe or funeral due)
-
-// Record a payment (tithe or funeral due) - allow members (public POST)
+// ========== PAYMENT ROUTES ==========
 app.post('/api/payments', async (req, res) => {
   const data = req.body;
-  if (!data.memberId || !data.amount || !data.type) {
-    return res.status(400).json({ error: 'memberId, amount, and type are required' });
-  }
+  if (!data.memberId || !data.amount || !data.type)
+    return res
+      .status(400)
+      .json({ error: 'memberId, amount, and type are required' });
+
   const payment = recordPayment(data);
   const member = getAllMembers().find(m => m.id === data.memberId);
   if (member) {
     try {
-        await sendSMS(
-          member.phone,
-          `Dear ${member.name}, your ${data.type} payment of GHS${data.amount} has been received. Thank you! — Christ Congregation Nkakaw`
+      await sendSMS(
+        member.phone,
+        `Dear ${member.name}, your ${data.type} payment of GHS${data.amount} has been received. Thank you! — Christ Congregation Nkawkaw`
       );
     } catch (err) {
       console.error('SMS error:', err.message);
@@ -135,33 +119,30 @@ app.post('/api/payments', async (req, res) => {
   res.status(201).json(payment);
 });
 
-// Get all payments
-// Admin: get all payments
 app.get('/api/payments', requireAuth, (req, res) => {
   res.json(getAllPayments());
 });
 
-// Admin: get payments for a member
 app.get('/api/payments/member/:id', requireAuth, (req, res) => {
   const id = Number(req.params.id);
   if (!id) return res.status(400).json({ error: 'Invalid id' });
-  const { getPaymentsForMember } = require('./payments');
   const list = getPaymentsForMember(id);
   res.json(list);
 });
 
-// Bulk SMS endpoint: { to: string|[string], message: string }
+// ========== SMS ROUTES ==========
 app.post('/api/sms/bulk', requireAuth, async (req, res) => {
   const { to, message, payloads } = req.body;
   try {
     let results;
     if (Array.isArray(payloads) && payloads.length > 0) {
-      // payloads: [{ to, message }, ...]
       results = await sendBulkSMS(payloads);
     } else if (to && message) {
       results = await sendBulkSMS(to, message);
     } else {
-      return res.status(400).json({ error: 'Provide either payloads or (to and message)' });
+      return res
+        .status(400)
+        .json({ error: 'Provide either payloads or (to and message)' });
     }
     res.json({ success: true, results });
   } catch (err) {
@@ -170,125 +151,70 @@ app.post('/api/sms/bulk', requireAuth, async (req, res) => {
   }
 });
 
-// Birthday SMS endpoint: sends to members whose DOB matches today (month-day)
-app.post('/api/sms/birthday', requireAuth, async (req, res) => {
-  // optional message template can be provided; else use stored template or default
-  const { template } = req.body || {};
-  const today = new Date();
-  const mmdd = `${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-  const membersWithDob = getAllMembers().filter(m => m.dob);
-  const targets = membersWithDob.filter(m => {
-    // m.dob stored as YYYY-MM-DD
-    const parts = m.dob.split('-');
-    if (parts.length !== 3) return false;
-    return `${parts[1]}-${parts[2]}` === mmdd;
-  });
-  if (targets.length === 0) return res.json({ success: true, message: 'No birthdays today' });
-  const recipients = targets.map(t => t.phone);
-  const messages = targets.map(t => {
-  const tmpl = template || birthdayTemplate || `Happy Birthday, {name}! Blessings on your special day from Christ Congregation Nkawkaw — Presbyterian Church of Ghana.`;
-    return tmpl.replace(/\{name\}/g, t.name);
-  });
-  // send messages individually so personalization is kept
-  const results = [];
-  for (let i = 0; i < recipients.length; i++) {
-    try {
-      const r = await sendSMS(recipients[i], messages[i]);
-      results.push({ to: recipients[i], sid: r.sid });
-    } catch (err) {
-      results.push({ to: recipients[i], error: err.message });
-      console.error('Birthday SMS error for', recipients[i], err.message);
-    }
-  }
-  res.json({ success: true, results, count: results.length });
-});
-
-// In-memory birthday template
+// ========== BIRTHDAY SMS LOGIC ==========
 let birthdayTemplate = null;
 
-// Get birthday template
 app.get('/api/sms/birthday-template', requireAuth, (req, res) => {
   res.json({ template: birthdayTemplate });
 });
 
-// Save birthday template
 app.post('/api/sms/birthday-template', requireAuth, (req, res) => {
   const { template } = req.body || {};
   birthdayTemplate = template || null;
   res.json({ success: true, template: birthdayTemplate });
 });
 
-// Manual trigger for birthday check (useful for testing)
-app.post('/api/sms/trigger-birthday-check', requireAuth, async (req, res) => {
-  try {
-    const results = await runBirthdayCheck();
-    res.json({ success: true, results });
-  } catch (err) {
-    console.error('Trigger birthday check error', err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Birthday check logic (reusable)
-async function runBirthdayCheck() {
+app.post('/api/sms/birthday', requireAuth, async (req, res) => {
+  const { template } = req.body || {};
   const today = new Date();
-  const mmdd = `${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-  const isoToday = today.toISOString().slice(0, 10);
+  const mmdd = `${String(today.getMonth() + 1).padStart(2, '0')}-${String(
+    today.getDate()
+  ).padStart(2, '0')}`;
   const membersWithDob = getAllMembers().filter(m => m.dob);
   const targets = membersWithDob.filter(m => {
     const parts = m.dob.split('-');
     if (parts.length !== 3) return false;
-    // avoid duplicate sends in same day
-    if (m.lastBirthdaySent === isoToday) return false;
     return `${parts[1]}-${parts[2]}` === mmdd;
   });
+  if (targets.length === 0)
+    return res.json({ success: true, message: 'No birthdays today' });
+
   const results = [];
   for (const t of targets) {
-  const tmpl = birthdayTemplate || `Happy Birthday, {name}! Blessings on your special day from Christ Congregation Nkawkaw — Presbyterian Church of Ghana.`;
-  const msg = tmpl.replace(/\{name\}/g, t.name);
+    const msg =
+      (template ||
+        birthdayTemplate ||
+        `Happy Birthday, {name}! Blessings on your special day from Christ Congregation Nkawkaw — Presbyterian Church of Ghana.`).replace(
+        /\{name\}/g,
+        t.name
+      );
     try {
       const r = await sendSMS(t.phone, msg);
       results.push({ to: t.phone, sid: r.sid });
-      setLastBirthdaySent(t.id, isoToday);
     } catch (err) {
       results.push({ to: t.phone, error: err.message });
-      console.error('Automated birthday SMS error for', t.phone, err.message);
     }
   }
-  return results;
-}
+  res.json({ success: true, results, count: results.length });
+});
 
-// Scheduler: run at startup and then periodically.
-const mode = process.env.BIRTHDAY_MODE || 'prod';
-(async () => {
-  try {
-    // initial run
-    await runBirthdayCheck();
-  } catch (e) {
-    console.error('Initial birthday check failed', e.message);
-  }
-  // dev: every minute; prod: every 24 hours
-  const intervalMs = mode === 'dev' ? 60 * 1000 : 24 * 60 * 60 * 1000;
-  setInterval(() => {
-    runBirthdayCheck().catch(err => console.error('Scheduled birthday check error', err.message));
-  }, intervalMs);
-})();
-// Health check route for testing and monitoring
+// ========== HEALTH + ROOT ROUTES ==========
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Backend running successfully!' });
+  res.json({
+    status: 'ok',
+    message: 'Backend running successfully!',
+    service: 'Christ Congregation Nkawkaw — Presbyterian Church of Ghana API'
+  });
 });
 
-// TODO: Add SMS integration
-
-// Simple homepage route (root)
 app.get('/', (req, res) => {
-  res.send(`
-    <h1>Christ Congregation Nkawkaw - Presbyterian Church Backend</h1>
-    <p>Welcome to the official backend API of Christ Congregation Nkawkaw - PCG.</p>
-    <p>Status: Online ✅</p>
-  `);
+  res.json({
+    message: 'Christ Congregation Nkawkaw — Presbyterian Church of Ghana API running',
+    status: 'ok'
+  });
 });
 
+// ========== START SERVER ==========
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`✅ Server running on port ${PORT}`);
 });
