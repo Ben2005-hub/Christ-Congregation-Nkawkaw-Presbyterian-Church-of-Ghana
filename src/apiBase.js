@@ -4,9 +4,9 @@ export function getApiBase() {
     const override = localStorage.getItem('api_base_override');
     if (override && override.trim()) return override.trim();
     const loc = window.location;
-    return `${loc.protocol}//${loc.hostname}:5001`;
+    return `https://christ-congregation-nkawkaw-presbyterian.onrender.com`;
   } catch (e) {
-    return 'http://localhost:5001';
+    return 'https://christ-congregation-nkawkaw-presbyterian.onrender.com';
   }
 }
 
