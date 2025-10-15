@@ -1,67 +1,49 @@
-// Twilio SMS utility
-const twilio = require('twilio');
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const fromNumber = process.env.TWILIO_PHONE_NUMBER;
-const SMS_SIMULATE = String(process.env.SMS_SIMULATE || '').toLowerCase() === 'true';
-let client;
-if (!SMS_SIMULATE && accountSid && authToken) {
-  client = twilio(accountSid, authToken);
-}
+// sms.js — Africa's Talking SMS integration
+require('dotenv').config();
+const axios = require('axios');
 
-function fakeSid() {
-  return 'SIM-' + Math.random().toString(36).slice(2, 10).toUpperCase();
-}
+const username = process.env.AFRICASTALKING_USERNAME || 'sandbox';
+const apiKey = process.env.AFRICASTALKING_API_KEY;
+const senderId = process.env.AFRICASTALKING_SENDER_ID || '';
+const simulate = process.env.SMS_SIMULATE === 'true';
 
-// send to single recipient
 async function sendSMS(to, message) {
-  if (SMS_SIMULATE) {
-    // simulate network delay
-    await new Promise(r => setTimeout(r, 100));
-    return { sid: fakeSid(), to, body: message };
+  if (simulate) {
+    console.log(`[SIMULATED SMS] To: ${to}, Message: ${message}`);
+    return { simulated: true };
   }
-  if (!client) throw new Error('Twilio not configured');
-  return client.messages.create({ body: message, from: fromNumber, to });
+
+  const url = 'https://api.africastalking.com/version1/messaging';
+  const data = new URLSearchParams({
+    username,
+    to,
+    message,
+    from: senderId
+  });
+
+  try {
+    const res = await axios.post(url, data, {
+      headers: {
+        apikey: apiKey,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    });
+    console.log('SMS sent:', res.data);
+    return res.data;
+  } catch (err) {
+    console.error('SMS sending failed:', err.response?.data || err.message);
+    throw err;
+  }
 }
 
-// accept array of recipients or single. recipients can be:
-// - ["+233..."] with single message param
-// - [{ to: "+233...", message: "Hi Name" }, ...] to provide per-recipient messages
-async function sendBulkSMS(recipients, message) {
-  const list = Array.isArray(recipients) ? recipients : [recipients];
+async function sendBulkSMS(payloads) {
   const results = [];
-  for (const entry of list) {
-    let to, body;
-    if (typeof entry === 'string') {
-      to = entry;
-      body = message;
-    } else if (entry && typeof entry === 'object') {
-      to = entry.to;
-      body = entry.message || message;
-    } else {
-      results.push({ to: entry, error: 'Invalid recipient format' });
-      continue;
-    }
-    if (SMS_SIMULATE) {
-      // simulate success/failure
-      await new Promise(r => setTimeout(r, 50));
-      // small chance to simulate an error
-      if (Math.random() < 0.03) {
-        results.push({ to, error: 'Simulated send error' });
-      } else {
-        results.push({ to, sid: fakeSid() });
-      }
-      continue;
-    }
-    if (!client) {
-      results.push({ to, error: 'Twilio not configured' });
-      continue;
-    }
+  for (const p of payloads) {
     try {
-      const res = await client.messages.create({ body, from: fromNumber, to });
-      results.push({ to, sid: res.sid });
+      const r = await sendSMS(p.to, p.message);
+      results.push({ to: p.to, success: true, result: r });
     } catch (err) {
-      results.push({ to, error: err.message });
+      results.push({ to: p.to, success: false, error: err.message });
     }
   }
   return results;
