@@ -5,10 +5,10 @@ Set-Location $scriptDir
 
 $pidFile = Join-Path $scriptDir '.server.pid'
 if (Test-Path $pidFile) {
-  $pid = Get-Content $pidFile -ErrorAction SilentlyContinue
-  if ($pid) {
-    Write-Host "Stopping server pid $pid ..."
-    try { Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue; Remove-Item $pidFile -ErrorAction SilentlyContinue; Write-Host 'Stopped.' } catch { Write-Host 'Failed to stop or process not found.' }
+  $mypid = Get-Content $pidFile -ErrorAction SilentlyContinue
+  if ($mypid) {
+    Write-Host "Stopping server pid $mypid ..."
+    try { Stop-Process -Id $mypid -Force -ErrorAction SilentlyContinue; Remove-Item $pidFile -ErrorAction SilentlyContinue; Write-Host 'Stopped.' } catch { Write-Host 'Failed to stop or process not found.' }
     exit 0
   }
 }
