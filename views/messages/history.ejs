@@ -1,0 +1,18 @@
+<h1 class="brand-heading">Message History</h1>
+<% if (!logs || logs.length === 0) { %>
+	<p>No messages yet.</p>
+<% } else { %>
+	<table class="table">
+		<thead><tr><th>#</th><th>To</th><th>Content</th><th>Sent at</th></tr></thead>
+		<tbody>
+			<% logs.forEach(l => { %>
+				<tr>
+					<td><%= l.id %></td>
+					<td><%= l.to_phone %></td>
+					<td><%= l.content %></td>
+					<td><%= l.sent_at %></td>
+				</tr>
+			<% }) %>
+		</tbody>
+	</table>
+<% } %>

@@ -1,0 +1,41 @@
+<h1 class="brand-heading">Compose Message</h1>
+
+<% if (typeof success !== 'undefined') { %>
+	<div class="alert alert-success"><%= success %></div>
+<% } %>
+
+<form method="POST" action="/messages/send">
+	<div class="mb-3">
+		<label class="form-label">Message</label>
+		<textarea name="content" class="form-control" rows="4" required></textarea>
+	</div>
+
+	<h5>Select recipients</h5>
+	<div class="mb-3">
+		<div class="form-check">
+			<input class="form-check-input" type="checkbox" id="selectAll">
+			<label class="form-check-label" for="selectAll">Select all</label>
+		</div>
+	</div>
+		<div class="mb-3" style="max-height:300px; overflow:auto;">
+			<% 
+				// preselect can be comma-separated list or single id
+				const preArr = (typeof preselect === 'string' && preselect.includes(',')) ? preselect.split(',').map(s => s.trim()) : (preselect ? [String(preselect)] : []);
+			%>
+			<% contacts.forEach(c => { %>
+				<div class="form-check">
+					<% const checked = preArr.includes(String(c.id)) ? 'checked' : '' %>
+					<input class="form-check-input recipient-checkbox" type="checkbox" name="recipients" value="<%= c.id %>" id="m<%= c.id %>" <%= checked %>>
+					<label class="form-check-label" for="m<%= c.id %>"><%= c.name %> — <%= c.phone %></label>
+				</div>
+			<% }) %>
+		</div>
+
+	<button class="btn btn-primary">Send</button>
+</form>
+<script>
+	document.getElementById('selectAll').addEventListener('change', function () {
+		const checked = this.checked;
+		document.querySelectorAll('.recipient-checkbox').forEach(cb => cb.checked = checked);
+	});
+</script>

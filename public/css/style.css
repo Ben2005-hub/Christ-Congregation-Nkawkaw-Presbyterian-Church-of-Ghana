@@ -1,0 +1,14 @@
+:root {
+	--pcp-purple: #3a0ca3; /* deep purple */
+	--pcp-gold: #ffd166;   /* warm gold */
+	--pcp-bg: #fbfafc;
+}
+body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background: var(--pcp-bg); }
+header { padding: 0.75rem 0; background: #fff; border-bottom: 1px solid #e9ecef; }
+nav a { margin-right: 0.75rem; color: var(--pcp-purple); font-weight: 600; }
+main { padding: 1.25rem 0; }
+.brand-heading { color: var(--pcp-purple); }
+.btn-primary { background-color: var(--pcp-purple); border-color: var(--pcp-purple); }
+.btn-primary:hover { background-color: #2a0688; border-color: #2a0688; }
+.card { border-radius: 0.5rem; }
+.navbar-brand { color: var(--pcp-purple); font-weight: 700; }

@@ -1,0 +1,51 @@
+<h1 class="brand-heading">Member Details</h1>
+
+<dl class="row">
+  <dt class="col-sm-3">Name</dt>
+  <dd class="col-sm-9"><%= member.name %></dd>
+
+  <dt class="col-sm-3">Phone</dt>
+  <dd class="col-sm-9"><%= member.phone %></dd>
+
+  <dt class="col-sm-3">Email</dt>
+  <dd class="col-sm-9"><%= member.email %></dd>
+
+  <dt class="col-sm-3">Group</dt>
+  <dd class="col-sm-9"><%= member.group_name %></dd>
+
+  <dt class="col-sm-3">Gender</dt>
+  <dd class="col-sm-9"><%= member.gender %></dd>
+
+  <dt class="col-sm-3">Address</dt>
+  <dd class="col-sm-9"><%= member.address %></dd>
+</dl>
+<hr>
+<h3>Edit</h3>
+<form method="POST" action="/members/<%= member.id %>?_method=PUT">
+  <div class="mb-3">
+    <label class="form-label">Full name</label>
+    <input name="name" value="<%= member.name %>" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Phone</label>
+    <input name="phone" value="<%= member.phone %>" class="form-control">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Birthday</label>
+    <input name="birthday" value="<%= member.birthday ? member.birthday.split('T')[0] : '' %>" class="form-control" type="date">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Email</label>
+    <input name="email" value="<%= member.email %>" class="form-control" type="email">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Group/Ministry</label>
+    <input name="group_name" value="<%= member.group_name %>" class="form-control">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Address</label>
+    <textarea name="address" class="form-control"><%= member.address %></textarea>
+  </div>
+  <button class="btn btn-primary">Save</button>
+  <a class="btn btn-outline-primary ms-2" href="/messages/compose?preselect=<%= member.id %>">Message this member</a>
+</form>

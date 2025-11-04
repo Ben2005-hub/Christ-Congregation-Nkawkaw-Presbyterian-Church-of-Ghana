@@ -1,0 +1,40 @@
+<h1 class="brand-heading">Members</h1>
+<% if (typeof members !== 'undefined') { %>
+	<p>Found <strong><%= members.length %></strong> members</p>
+		<form id="bulkMessageForm" method="GET" action="/messages/compose">
+		<table class="table table-striped">
+		<thead>
+				<tr><th><input type="checkbox" id="selectAllList"></th><th>#</th><th>Name</th><th>Phone</th><th>Email</th><th>Group</th><th></th></tr>
+		</thead>
+		<tbody>
+			<% members.forEach(m => { %>
+				<tr>
+						<td><input class="member-checkbox" type="checkbox" name="ids" value="<%= m.id %>"></td>
+						<td><%= m.id %></td>
+						<td><%= m.name %></td>
+					<td><%= m.phone %></td>
+					<td><%= m.email %></td>
+					<td><%= m.group_name %></td>
+						<td><a class="btn btn-sm btn-outline-primary" href="/members/<%= m.id %>">View</a></td>
+				</tr>
+			<% }) %>
+		</tbody>
+	</table>
+		<button id="messageSelected" class="btn btn-primary">Message selected</button>
+		</form>
+		<script>
+			document.getElementById('selectAllList').addEventListener('change', function () {
+				const checked = this.checked;
+				document.querySelectorAll('.member-checkbox').forEach(cb => cb.checked = checked);
+			});
+			document.getElementById('bulkMessageForm').addEventListener('submit', function (e) {
+				e.preventDefault();
+				const ids = Array.from(document.querySelectorAll('.member-checkbox:checked')).map(cb => cb.value);
+				if (ids.length === 0) return alert('Select at least one member');
+				// redirect to compose with preselected ids as comma list
+				window.location = '/messages/compose?preselect=' + ids.join(',');
+			});
+		</script>
+<% } else { %>
+	<p>No members to show.</p>
+<% } %>
