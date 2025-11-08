@@ -46,6 +46,19 @@ db.serialize(() => {
   `);
 
   db.run(`
+    CREATE TABLE IF NOT EXISTS payments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      member_id INTEGER NOT NULL,
+      type TEXT NOT NULL,
+      amount REAL NOT NULL,
+      date TEXT,
+      reference TEXT,
+      note TEXT,
+      FOREIGN KEY(member_id) REFERENCES members(id) ON DELETE CASCADE
+    )
+  `);
+
+  db.run(`
     CREATE TABLE IF NOT EXISTS message_log (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       to_phone TEXT,
@@ -117,6 +130,66 @@ module.exports = {
     });
   }
   ,
+  // Payment helpers
+  addPayment: (payment) => {
+    const { member_id, type, amount, date, reference, note } = payment;
+    return new Promise((resolve, reject) => {
+      const stmt = `INSERT INTO payments (member_id, type, amount, date, reference, note) VALUES (?, ?, ?, ?, ?, ?)`;
+      db.run(stmt, [member_id, type, amount, date || null, reference || null, note || null], function (err) {
+        if (err) return reject(err);
+        resolve(this.lastID);
+      });
+    });
+  },
+  searchMembers: (q) => {
+    const like = `%${q}%`;
+    return new Promise((resolve, reject) => {
+      db.all('SELECT * FROM members WHERE name LIKE ? OR phone LIKE ? ORDER BY id DESC', [like, like], (err, rows) => {
+        if (err) return reject(err);
+        resolve(rows);
+      });
+    });
+  },
+
+  getPaymentsByMember: (memberId) => {
+    return new Promise((resolve, reject) => {
+      db.all('SELECT * FROM payments WHERE member_id = ? ORDER BY date DESC, id DESC', [memberId], (err, rows) => {
+        if (err) return reject(err);
+        resolve(rows);
+      });
+    });
+  },
+
+  getPaymentById: (id) => {
+    return new Promise((resolve, reject) => {
+      db.get('SELECT * FROM payments WHERE id = ?', [id], (err, row) => {
+        if (err) return reject(err);
+        resolve(row);
+      });
+    });
+  },
+
+  deletePayment: (id) => {
+    return new Promise((resolve, reject) => {
+      db.run('DELETE FROM payments WHERE id = ?', [id], function (err) {
+        if (err) return reject(err);
+        resolve(this.changes);
+      });
+    });
+  },
+
+  // Returns totals grouped by payment type for a member
+  getPaymentTotalsByMember: (memberId) => {
+    return new Promise((resolve, reject) => {
+      db.all('SELECT type, IFNULL(SUM(amount),0) AS total FROM payments WHERE member_id = ? GROUP BY type', [memberId], (err, rows) => {
+        if (err) return reject(err);
+        const totals = {};
+        rows.forEach(r => { totals[r.type] = r.total; });
+        resolve(totals);
+      });
+    });
+  },
+
   // Message helpers
   logMessage: (to_phone, content) => {
     return new Promise((resolve, reject) => {

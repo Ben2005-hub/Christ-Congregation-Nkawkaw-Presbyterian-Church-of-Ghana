@@ -1,22 +1,36 @@
 <h1 class="brand-heading">Members</h1>
 <% if (typeof members !== 'undefined') { %>
-	<p>Found <strong><%= members.length %></strong> members</p>
+		<p>Found <strong><%= members.length %></strong> members</p>
+		<form class="row g-2 mb-3" method="GET" action="/members">
+			<div class="col-auto">
+				<input name="q" value="<%= q || '' %>" class="form-control" placeholder="Search name or phone...">
+			</div>
+			<div class="col-auto">
+				<button class="btn btn-secondary">Search</button>
+			</div>
+		</form>
 		<form id="bulkMessageForm" method="GET" action="/messages/compose">
 		<table class="table table-striped">
 		<thead>
-				<tr><th><input type="checkbox" id="selectAllList"></th><th>#</th><th>Name</th><th>Phone</th><th>Email</th><th>Group</th><th></th></tr>
+						<tr><th><input type="checkbox" id="selectAllList"></th><th>#</th><th>Name</th><th>Phone</th><th>Email</th><th>Group</th><th>Totals</th><th></th></tr>
 		</thead>
 		<tbody>
 			<% members.forEach(m => { %>
-				<tr>
-						<td><input class="member-checkbox" type="checkbox" name="ids" value="<%= m.id %>"></td>
-						<td><%= m.id %></td>
-						<td><%= m.name %></td>
-					<td><%= m.phone %></td>
-					<td><%= m.email %></td>
-					<td><%= m.group_name %></td>
-						<td><a class="btn btn-sm btn-outline-primary" href="/members/<%= m.id %>">View</a></td>
-				</tr>
+								<tr>
+												<td><input class="member-checkbox" type="checkbox" name="ids" value="<%= m.id %>"></td>
+												<td><%= m.id %></td>
+												<td><%= m.name %></td>
+										<td><%= m.phone %></td>
+										<td><%= m.email %></td>
+										<td><%= m.group_name %></td>
+										<td>
+											<% if (m.totals) { %>
+												<div>Tithe: GHS <%= Number(m.totals.tithe || 0).toFixed(2) %></div>
+												<div>Funeral: GHS <%= Number(m.totals.funeral || 0).toFixed(2) %></div>
+											<% } %>
+										</td>
+												<td><a class="btn btn-sm btn-outline-primary" href="/members/<%= m.id %>">View</a></td>
+								</tr>
 			<% }) %>
 		</tbody>
 	</table>

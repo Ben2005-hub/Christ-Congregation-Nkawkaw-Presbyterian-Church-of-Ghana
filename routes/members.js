@@ -24,8 +24,17 @@ router.post('/add', async (req, res) => {
 // Admin-only list
 router.get('/', ensureAuth, async (req, res) => {
   try {
-    const members = await db.getMembers();
-    res.render('members/list', { members });
+    const q = req.query.q;
+    const members = q ? await db.searchMembers(q) : await db.getMembers();
+    // If searching, enrich results with payment totals for quick overview
+    if (q && members && members.length > 0) {
+      for (const m of members) {
+        try {
+          m.totals = await db.getPaymentTotalsByMember(m.id);
+        } catch (e) { m.totals = {}; }
+      }
+    }
+    res.render('members/list', { members, q });
   } catch (err) {
     res.status(500).send('Server error');
   }
@@ -35,7 +44,10 @@ router.get('/:id', ensureAuth, async (req, res) => {
   try {
     const member = await db.getMemberById(req.params.id);
     if (!member) return res.status(404).send('Not found');
-    res.render('members/edit', { member });
+    // also fetch payments and totals for this member
+    const payments = await db.getPaymentsByMember(req.params.id);
+    const totals = await db.getPaymentTotalsByMember(req.params.id);
+    res.render('members/edit', { member, payments, totals });
   } catch (err) {
     res.status(500).send('Server error');
   }

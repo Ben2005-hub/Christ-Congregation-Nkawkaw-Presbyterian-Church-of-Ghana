@@ -49,3 +49,35 @@
   <button class="btn btn-primary">Save</button>
   <a class="btn btn-outline-primary ms-2" href="/messages/compose?preselect=<%= member.id %>">Message this member</a>
 </form>
+
+<hr>
+<h3>Payments</h3>
+<p>
+  <strong>Tithe total:</strong> GHS <%= (totals && totals.tithe) ? Number(totals.tithe).toFixed(2) : '0.00' %>
+  &nbsp; &nbsp;
+  <strong>Funeral dues total:</strong> GHS <%= (totals && totals.funeral) ? Number(totals.funeral).toFixed(2) : '0.00' %>
+</p>
+
+<% if (payments && payments.length > 0) { %>
+  <table class="table">
+    <thead><tr><th>#</th><th>Type</th><th>Amount</th><th>Date</th><th>Reference</th><th></th></tr></thead>
+    <tbody>
+      <% payments.forEach(p => { %>
+        <tr>
+          <td><%= p.id %></td>
+          <td><%= p.type %></td>
+          <td>GHS <%= Number(p.amount).toFixed(2) %></td>
+          <td><%= p.date ? (new Date(p.date)).toLocaleString() : '' %></td>
+          <td><%= p.reference %></td>
+          <td>
+            <form method="POST" action="/payments/<%= p.id %>?_method=DELETE" onsubmit="return confirm('Delete this payment?');">
+              <button class="btn btn-sm btn-outline-danger">Delete</button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+<% } else { %>
+  <p>No payments recorded for this member.</p>
+<% } %>
