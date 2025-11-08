@@ -56,9 +56,12 @@ db.ensureInitialAdmin().then(created => {
   if (created) console.log('Initial admin created');
 }).catch(err => console.error('Failed to ensure initial admin', err));
 
-// Middleware to make user session available in templates
+// Middleware to make user session and flash messages available in templates
 app.use((req, res, next) => {
   res.locals.user = req.session.user;
+  // simple session-based flash: move message into locals and clear it
+  res.locals.flash = req.session.flash;
+  delete req.session.flash;
   next();
 });
 

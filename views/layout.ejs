@@ -25,6 +25,13 @@
         </div>
       </nav>
     </header>
+    <% if (flash) { %>
+      <div class="container mt-3">
+        <div class="alert alert-<%= flash.type || 'info' %>" role="alert">
+          <%= flash.message %>
+        </div>
+      </div>
+    <% } %>
     <main class="container py-4">
       <%- body %>
     </main>

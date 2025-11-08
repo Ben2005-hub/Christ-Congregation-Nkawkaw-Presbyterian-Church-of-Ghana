@@ -75,8 +75,9 @@ router.delete('/:id', ensureAuth, async (req, res) => {
       });
     });
     
-    // On success, redirect to members list
-    res.redirect('/members');
+  // On success, set a flash message and redirect to members list
+  req.session.flash = { type: 'success', message: 'Member deleted successfully.' };
+  res.redirect('/members');
   } catch (err) {
     console.error('Delete member error:', err);
     res.status(500).send('Failed to delete member');
