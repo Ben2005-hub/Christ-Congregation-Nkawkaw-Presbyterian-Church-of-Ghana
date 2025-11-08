@@ -2,8 +2,17 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const bcrypt = require('bcryptjs');
-const dbPath = path.join(__dirname, 'church.db');
-const db = new sqlite3.Database(dbPath);
+const dbPath = process.env.NODE_ENV === 'production' 
+  ? '/tmp/church.db'  // Use /tmp in production (Vercel)
+  : path.join(__dirname, 'church.db');
+const db = new sqlite3.Database(dbPath, (err) => {
+  if (err) {
+    console.error('Database connection error:', err);
+    if (process.env.NODE_ENV === 'production') {
+      console.error('Database path:', dbPath);
+    }
+  }
+});
 
 db.serialize(() => {
   db.run(`
