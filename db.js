@@ -14,7 +14,13 @@ const db = new sqlite3.Database(dbPath, (err) => {
   }
 });
 
+// Enable foreign keys for every connection
+db.run('PRAGMA foreign_keys = ON');
+
 db.serialize(() => {
+  // Enable foreign keys
+  db.run('PRAGMA foreign_keys = ON');
+
   db.run(`
     CREATE TABLE IF NOT EXISTS members (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -34,7 +40,8 @@ db.serialize(() => {
       recipient_type TEXT,
       recipient_id INTEGER,
       content TEXT,
-      date_sent TEXT
+      date_sent TEXT,
+      FOREIGN KEY(recipient_id) REFERENCES members(id) ON DELETE CASCADE
     )
   `);
 

@@ -58,4 +58,29 @@ router.put('/:id', ensureAuth, async (req, res) => {
   }
 });
 
+// Delete member
+router.delete('/:id', ensureAuth, async (req, res) => {
+  try {
+    await new Promise((resolve, reject) => {
+      // First delete related records from messages table
+      db.db.run('DELETE FROM messages WHERE recipient_type = "member" AND recipient_id = ?', [req.params.id], (err) => {
+        if (err) return reject(err);
+        
+        // Then delete the member
+        db.db.run('DELETE FROM members WHERE id = ?', [req.params.id], function(err) {
+          if (err) return reject(err);
+          if (this.changes === 0) return reject(new Error('Member not found'));
+          resolve();
+        });
+      });
+    });
+    
+    // On success, redirect to members list
+    res.redirect('/members');
+  } catch (err) {
+    console.error('Delete member error:', err);
+    res.status(500).send('Failed to delete member');
+  }
+});
+
 module.exports = router;
