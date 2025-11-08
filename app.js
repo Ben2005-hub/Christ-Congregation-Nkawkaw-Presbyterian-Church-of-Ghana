@@ -28,6 +28,24 @@ app.use(session({
 // Import routes
 const db = require('./db');
 const authRoutes = require('./routes/auth');
+
+// Error handling
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  if (process.env.NODE_ENV === 'production') {
+    // Don't expose error details in production
+    res.status(500).render('error', {
+      message: 'Something went wrong!',
+      layout: 'layout'
+    });
+  } else {
+    res.status(500).render('error', {
+      message: err.message,
+      error: err,
+      layout: 'layout'
+    });
+  }
+});
 const membersRoutes = require('./routes/members');
 const messagesRoutes = require('./routes/messages');
 const adminRoutes = require('./routes/admin');

@@ -1,0 +1,12 @@
+<!-- views/error.ejs -->
+<div class="container mt-5">
+  <div class="alert alert-danger">
+    <h4 class="alert-heading">Error</h4>
+    <p><%= message %></p>
+    <% if (typeof error !== 'undefined' && error) { %>
+      <hr>
+      <pre class="mb-0"><%= error.stack %></pre>
+    <% } %>
+  </div>
+  <a href="/" class="btn btn-primary">Return Home</a>
+</div>
