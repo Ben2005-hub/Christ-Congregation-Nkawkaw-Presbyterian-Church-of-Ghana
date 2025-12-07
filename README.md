@@ -14,7 +14,7 @@ A full-stack web application for managing church members, payments (tithes & fun
 
 ## SMS Provider Setup
 
-### Arkesel/Akasel (Recommended)
+### Arkesel (Recommended)
 
 1. Sign up at https://arkesel.com
 2. Get your API key from the dashboard
@@ -26,18 +26,6 @@ A full-stack web application for managing church members, payments (tithes & fun
    SMS_SENDER=CHURCH
    ```
 4. Access SMS tools at `/admin/sms` to check balance and send SMS
-
-### MTN SMS (Alternative)
-
-If using MTN instead of Arkesel:
-```
-SMS_PROVIDER=mtmtn
-MTN_SMS_BASE=https://api.mtn.com
-MTN_TOKEN_URL=https://api.mtn.com/v1/oauth/access_token/accesstoken
-MTN_CLIENT_ID=your_client_id
-MTN_CLIENT_SECRET=your_client_secret
-MTN_SMS_SENDER=yourshortcode
-```
 
 ### Simulation Mode (For Testing)
 
