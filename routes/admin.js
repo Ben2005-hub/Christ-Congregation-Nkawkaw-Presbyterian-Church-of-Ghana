@@ -50,4 +50,18 @@ router.post('/sms/send', ensureAuth, async (req, res) => {
   }
 });
 
+// Debug: view recent SMS message_log entries (admin only)
+router.get('/sms/logs', ensureAuth, async (req, res) => {
+  try {
+    db.db.all('SELECT * FROM message_log ORDER BY id DESC LIMIT 200', (err, rows) => {
+      if (err) return res.status(500).send('Failed to read logs');
+      // render simple JSON view for debugging
+      res.setHeader('Content-Type', 'application/json');
+      res.send(JSON.stringify(rows, null, 2));
+    });
+  } catch (err) {
+    res.status(500).send('Server error');
+  }
+});
+
 module.exports = router;

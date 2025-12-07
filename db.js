@@ -191,15 +191,32 @@ module.exports = {
   },
 
   // Message helpers
-  logMessage: (to_phone, content) => {
+  // Supports two signatures:
+  //  - logMessage(to_phone, content)
+  //  - logMessage(logObject) where logObject may contain to, to_phone, content, status, error, etc.
+  logMessage: (to_phone_or_obj, content) => {
     return new Promise((resolve, reject) => {
-      db.run('INSERT INTO message_log (to_phone, content, sent_at) VALUES (?, ?, CURRENT_TIMESTAMP)', [to_phone, content], function (err) {
-        if (err) return reject(err);
-        resolve(this.lastID);
-      });
+      try {
+        if (typeof to_phone_or_obj === 'object' && to_phone_or_obj !== null) {
+          const entry = to_phone_or_obj;
+          const to = entry.to || entry.to_phone || entry.toPhone || '';
+          const payload = typeof entry === 'string' ? entry : JSON.stringify(entry);
+          db.run('INSERT INTO message_log (to_phone, content, sent_at) VALUES (?, ?, CURRENT_TIMESTAMP)', [to, payload], function (err) {
+            if (err) return reject(err);
+            resolve(this.lastID);
+          });
+        } else {
+          const to = to_phone_or_obj || '';
+          db.run('INSERT INTO message_log (to_phone, content, sent_at) VALUES (?, ?, CURRENT_TIMESTAMP)', [to, content], function (err) {
+            if (err) return reject(err);
+            resolve(this.lastID);
+          });
+        }
+      } catch (e) {
+        reject(e);
+      }
     });
-  }
-  ,
+  },
   /* Admin helpers */
   addAdmin: (admin) => {
     const { username, name, password } = admin;
