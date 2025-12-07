@@ -1,0 +1,38 @@
+<h1>My Payments</h1>
+<form method="POST" action="/my-payments/lookup" class="row g-2 mb-3">
+  <div class="col-auto">
+    <input name="phone" class="form-control" placeholder="Enter your phone number (e.g. 0551234567)" value="<%= q || '' %>">
+  </div>
+  <div class="col-auto">
+    <button class="btn btn-primary">Lookup</button>
+  </div>
+</form>
+
+<% if (member) { %>
+  <h3>Payments for <%= member.name %> (ID: <%= member.id %>)</h3>
+  <p>
+    <strong>Tithe:</strong> GHS <%= Number(totals.tithe || 0).toFixed(2) %>
+    &nbsp; &nbsp;
+    <strong>Funeral:</strong> GHS <%= Number(totals.funeral || 0).toFixed(2) %>
+  </p>
+  <% if (payments && payments.length > 0) { %>
+    <table class="table">
+      <thead><tr><th>#</th><th>Type</th><th>Amount</th><th>Date</th><th>Ref</th></tr></thead>
+      <tbody>
+        <% payments.forEach(p => { %>
+          <tr>
+            <td><%= p.id %></td>
+            <td><%= p.type %></td>
+            <td>GHS <%= Number(p.amount).toFixed(2) %></td>
+            <td><%= p.date ? (new Date(p.date)).toLocaleString() : '' %></td>
+            <td><%= p.reference %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } else { %>
+    <p>No payments recorded.</p>
+  <% } %>
+<% } else if (payments && payments.length === 0) { %>
+  <p>No member found with that phone number.</p>
+<% } %>

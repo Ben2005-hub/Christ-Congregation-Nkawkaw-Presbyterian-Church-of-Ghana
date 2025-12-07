@@ -12,3 +12,16 @@ main { padding: 1.25rem 0; }
 .btn-primary:hover { background-color: #2a0688; border-color: #2a0688; }
 .card { border-radius: 0.5rem; }
 .navbar-brand { color: var(--pcp-purple); font-weight: 700; }
+
+/* Mobile viewport fixes: ensure no zooming on mobile and responsive font scaling */
+html, body {
+	-webkit-text-size-adjust: 100%; /* prevent iOS font boosting */
+	-ms-text-size-adjust: 100%;
+}
+
+/* Make layout container fluid on small screens */
+@media (max-width: 576px) {
+	.container { padding-left: 0.5rem; padding-right: 0.5rem; }
+	.navbar-brand { font-size: 1rem; }
+	nav a { font-size: 0.95rem; }
+}

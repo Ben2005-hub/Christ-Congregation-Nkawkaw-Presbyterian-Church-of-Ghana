@@ -50,6 +50,8 @@ const membersRoutes = require('./routes/members');
 const messagesRoutes = require('./routes/messages');
 const adminRoutes = require('./routes/admin');
 const webhookRoutes = require('./routes/webhooks');
+const paymentsRoutes = require('./routes/payments');
+const publicPayments = require('./routes/publicPayments');
 
 // Ensure initial admin exists
 db.ensureInitialAdmin().then(created => {
@@ -71,6 +73,8 @@ app.use('/members', membersRoutes);
 app.use('/messages', messagesRoutes);
 app.use('/admin', adminRoutes);
 app.use('/webhook', webhookRoutes);
+app.use('/payments', paymentsRoutes);
+app.use('/my-payments', publicPayments);
 
 // Dashboard route
 app.get('/', ensureAuth, async (req, res) => {
