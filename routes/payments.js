@@ -26,4 +26,18 @@ router.delete('/:id', ensureAuth, async (req, res) => {
   }
 });
 
+// Add a payment (admin only) - form posts here from member page
+router.post('/add', ensureAuth, async (req, res) => {
+  try {
+    const { member_id, type, amount, date, reference, note } = req.body;
+    await db.addPayment({ member_id, type, amount: parseFloat(amount || 0), date, reference, note });
+    req.session.flash = { type: 'success', message: 'Payment recorded' };
+    res.redirect('/members/' + member_id);
+  } catch (err) {
+    console.error('Add payment error:', err);
+    req.session.flash = { type: 'danger', message: 'Failed to record payment' };
+    res.redirect('back');
+  }
+});
+
 module.exports = router;

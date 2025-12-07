@@ -81,3 +81,31 @@
 <% } else { %>
   <p>No payments recorded for this member.</p>
 <% } %>
+
+<hr>
+<h4>Add Payment</h4>
+<form method="POST" action="/payments/add" class="row g-2 mb-3">
+  <input type="hidden" name="member_id" value="<%= member.id %>">
+  <div class="col-md-3">
+    <select name="type" class="form-select" required>
+      <option value="tithe">Tithe</option>
+      <option value="funeral">Funeral</option>
+      <option value="other">Other</option>
+    </select>
+  </div>
+  <div class="col-md-3">
+    <input name="amount" class="form-control" placeholder="Amount" required>
+  </div>
+  <div class="col-md-3">
+    <input name="date" type="date" class="form-control">
+  </div>
+  <div class="col-md-3">
+    <input name="reference" class="form-control" placeholder="Reference">
+  </div>
+  <div class="col-12 mt-2">
+    <textarea name="note" class="form-control" placeholder="Optional note"></textarea>
+  </div>
+  <div class="col-12 mt-2">
+    <button class="btn btn-success">Add payment</button>
+  </div>
+</form>

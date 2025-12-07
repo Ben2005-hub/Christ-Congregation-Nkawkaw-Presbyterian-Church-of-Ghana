@@ -1,0 +1,21 @@
+<h1>SMS Tools</h1>
+<p>Provider: <strong><%= provider %></strong></p>
+<% if (balance) { %>
+  <p><strong>Balance:</strong> <%= JSON.stringify(balance) %></p>
+<% } %>
+
+<h3>Send SMS</h3>
+<form method="POST" action="/admin/sms/send" class="row g-2">
+  <div class="col-md-4"><input name="to" class="form-control" placeholder="Phone number" required></div>
+  <div class="col-md-6"><input name="message" class="form-control" placeholder="Message" required></div>
+  <div class="col-md-2"><button class="btn btn-primary">Send</button></div>
+</form>
+
+<h3 class="mt-4">Send scheduled SMS</h3>
+<form method="POST" action="/admin/sms/send" class="row g-2">
+  <input type="hidden" name="schedule_mode" value="1">
+  <div class="col-md-3"><input name="to" class="form-control" placeholder="Phone number" required></div>
+  <div class="col-md-4"><input name="message" class="form-control" placeholder="Message" required></div>
+  <div class="col-md-3"><input name="schedule" type="datetime-local" class="form-control"></div>
+  <div class="col-md-2"><button class="btn btn-secondary">Schedule</button></div>
+</form>
